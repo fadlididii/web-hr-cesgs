@@ -1,0 +1,147 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-gradient-primary text-white">
+        <h3 class="mb-0 text-white">Tambah Karyawan</h3>
+    </div>
+    <div class="card-body">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert 
+                    {% if message.tags == 'success' %}alert-success
+                    {% elif message.tags == 'error' %}alert-danger
+                    {% else %}alert-warning{% endif %}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="formKaryawan">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Nama</label>
+                        {{ form.nama }}
+                        <small class="form-text text-danger d-none" id="namaWarning">Nama hanya boleh huruf dan spasi.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        {{ form.email }}
+                        <small class="form-text text-danger d-none" id="emailWarning">
+                            Format email tidak valid. Contoh: nama@email.com
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        {{ form.role }}
+                    </div>
+                    <div class="form-group">
+                        <label>Jabatan</label>
+                        {{ form.jabatan }}
+                    </div>
+                    <div class="form-group">
+                        <label>Divisi</label>
+                        {{ form.divisi }}
+                    </div>
+                    <div class="form-group">
+                        <label>No. Telepon/WA</label>
+                        {{ form.no_telepon }}
+                        <small class="form-text text-danger d-none" id="noTeleponWarning">
+                            Nomor telepon harus dimulai dengan <b>08</b> dan berisi 10-13 digit angka.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Alamat</label>
+                        {{ form.alamat }}
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        {{ form.status }}
+                    </div>
+                    <div class="form-group">
+                        <label>Mulai Kontrak</label>
+                        {{ form.mulai_kontrak }}
+                    </div>
+                    <div class="form-group">
+                        <label>Batas Kontrak</label>
+                        {{ form.batas_kontrak }}
+                    </div>
+                    <div class="form-group">
+                        <label>Status Keaktifan</label>
+                        {{ form.status_keaktifan }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-right mt-3">
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <a href="{% url 'list_karyawan' %}" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+// Validasi Nama (Hanya huruf dan spasi)
+document.getElementById('id_nama').addEventListener('input', function() {
+    const nama = this.value;
+    const regex = /^[A-Za-z\s]+$/;
+    const warning = document.getElementById('namaWarning');
+
+    if (!regex.test(nama)) {
+        warning.classList.remove('d-none');
+    } else {
+        warning.classList.add('d-none');
+    }
+});
+
+// Validasi No Telepon (Format Indonesia: 08xx dan 10-13 digit)
+document.getElementById('id_no_telepon').addEventListener('input', function() {
+    const noTelepon = this.value;
+    const regex = /^08\d{8,11}$/;  // Mulai 08 + 8-11 digit (total 10-13)
+
+    const warning = document.getElementById('noTeleponWarning');
+
+    if (!regex.test(noTelepon)) {
+        warning.classList.remove('d-none');
+    } else {
+        warning.classList.add('d-none');
+    }
+});
+
+// Validasi Email (Live saat ketik)
+document.getElementById('id_email').addEventListener('input', function() {
+    const email = this.value;
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const warning = document.getElementById('emailWarning');
+
+    if (!regex.test(email)) {
+        warning.classList.remove('d-none');
+    } else {
+        warning.classList.add('d-none');
+    }
+});
+
+// Cegah submit jika form tidak valid
+document.getElementById('formKaryawan').addEventListener('submit', function(event) {
+    const nama = document.getElementById('id_nama').value;
+    const noTelepon = document.getElementById('id_no_telepon').value;
+
+    const namaValid = /^[A-Za-z\s]+$/.test(nama);
+    const noTeleponValid = /^08\d{8,11}$/.test(noTelepon);
+
+    if (!namaValid || !noTeleponValid) {
+        event.preventDefault();
+        alert('Form tidak valid. Mohon perbaiki kesalahan terlebih dahulu.');
+    }
+});
+</script>
+
+{% endblock %}

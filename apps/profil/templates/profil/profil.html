@@ -1,0 +1,181 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Edit Profil{% endblock title %}
+
+{% block content %}
+<div class="header pb-6 d-flex align-items-center" 
+     style="min-height: 400px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
+  <span class="mask bg-gradient-primary opacity-8"></span>
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+      <div class="col-lg-7 col-md-10">
+        <h1 class="display-2 text-white">Edit Profil</h1>
+        <p class="text-white mt-0 mb-5">Perbarui informasi profilmu agar tetap relevan dan up to date.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">Form Edit Profil</h3>
+        </div>
+        <div class="card-body">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert 
+                  {% if message.tags == 'success' %}alert-success
+                  {% elif message.tags == 'error' %}alert-danger
+                  {% else %}alert-warning{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="POST">
+            {% csrf_token %}
+            <h6 class="heading-small text-muted mb-4">Informasi Pribadi</h6>
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Nama</label>
+                    {{ form.nama }}
+                    <small class="form-text text-danger d-none" id="namaWarning">
+                        Nama hanya boleh huruf dan spasi.
+                    </small>
+                    {% if form.nama.errors %}
+                        <small class="text-danger">{{ form.nama.errors.0 }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email</label>
+                        {{ form.email }}
+                        <small class="form-text text-danger d-none" id="emailWarning">
+                            Format email tidak valid (contoh: nama@email.com).
+                        </small>
+                    </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Jabatan</label>
+                    {{ form.jabatan }}
+                  </div>
+                  <div class="form-group">
+                    <label>Divisi</label>
+                    {{ form.divisi }}
+                  </div>
+                  <div class="form-group">
+                    <label>Status</label>
+                    {{ form.status }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Role</label>
+                        {{ form.role }}
+                    </div>
+                  <div class="form-group">
+                    <label>Mulai Kontrak</label>
+                    {{ form.mulai_kontrak }}
+                  </div>
+                  <div class="form-group">
+                    <label>Batas Kontrak</label>
+                    {{ form.batas_kontrak }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h6 class="heading-small text-muted mb-4">Informasi Kontak & Alamat</h6>
+            <div class="pl-lg-4">
+                <div class="form-group">
+                    <label>Alamat</label>
+                    {{ form.alamat }}
+                </div>
+                <div class="form-group">
+                    <label>No. Telepon</label>
+                    {{ form.no_telepon }}
+                    <small class="form-text text-danger d-none" id="teleponWarning">
+                        No telepon harus 10-13 digit angka dan diawali 08.
+                    </small>
+                    {% if form.no_telepon.errors %}
+                        <small class="text-danger">{{ form.no_telepon.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            </div>            
+
+            <hr class="my-4">
+
+            <h6 class="heading-small text-muted mb-4">Keamanan</h6>
+            <div class="pl-lg-4">
+              <div class="form-group">
+                <label>Password Baru (Opsional)</label>
+                {{ form.password }}
+                <small class="form-text text-muted">Kosongkan jika tidak ingin mengganti password.</small>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/footer.html" %}
+</div>
+
+<!-- Live Validation Script -->
+<script>
+  const namaInput = document.getElementById('id_nama');
+  const emailInput = document.getElementById('id_email');
+  const teleponInput = document.getElementById('id_no_telepon');
+
+  const namaWarning = document.getElementById('namaWarning');
+  const emailWarning = document.getElementById('emailWarning');
+  const teleponWarning = document.getElementById('teleponWarning');
+
+  // Regex rules
+  const regexNama = /^[a-zA-Z\s]+$/;
+  const regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const regexTelepon = /^08[0-9]{8,11}$/;
+
+  namaInput.addEventListener('input', () => {
+      if (!regexNama.test(namaInput.value)) {
+          namaWarning.classList.remove('d-none');
+      } else {
+          namaWarning.classList.add('d-none');
+      }
+  });
+
+  emailInput.addEventListener('input', () => {
+      if (!regexEmail.test(emailInput.value)) {
+          emailWarning.classList.remove('d-none');
+      } else {
+          emailWarning.classList.add('d-none');
+      }
+  });
+
+  teleponInput.addEventListener('input', () => {
+      if (!regexTelepon.test(teleponInput.value)) {
+          teleponWarning.classList.remove('d-none');
+      } else {
+          teleponWarning.classList.add('d-none');
+      }
+  });
+</script>
+
+{% endblock content %}

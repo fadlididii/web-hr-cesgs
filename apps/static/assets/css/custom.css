@@ -1,0 +1,22 @@
+:root {
+    --primary-color: #1368A3;
+    --secondary-color: #2C949C;
+    --accent-color: #3AA89A;
+    --dark-color: #1D3557;
+    --light-color: #F8F9FA;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+  }
+  
+  /* .navbar-brand img {
+    filter: brightness(0) invert(1);
+  }
+   */
