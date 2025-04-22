@@ -14,34 +14,22 @@
     </div>
 </div>
 
-
-<!-- Tampilkan Messages (Sukses/Info/Error) -->
-<div class="container-fluid mt-3">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert 
-                {% if message.tags == 'success' %}alert-success
-                {% elif message.tags == 'error' %}alert-danger
-                {% else %}alert-warning{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        {% endfor %}
-    {% endif %}
-</div>
-
 <div class="container-fluid mt--4">
     <div class="card">
         <div class="card-body">
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="mb-0">Daftar Karyawan</h3>
-                <a href="{% url 'tambah_karyawan' %}" class="btn btn-success btn-sm">
-                    <i class="ni ni-fat-add"></i> Tambah Karyawan
-                </a>
+                <div>
+                    <a href="{% url 'download_karyawan' %}" class="btn btn-info btn-sm">
+                        <i class="ni ni-cloud-download-95"></i> Download Excel
+                    </a>
+                    <a href="{% url 'tambah_karyawan' %}" class="btn btn-success btn-sm">
+                        <i class="ni ni-fat-add"></i> Tambah Karyawan
+                    </a>
+                </div>
             </div>
+            
 
             <!-- Form Filter -->
             <form method="GET" class="mb-3">
@@ -138,6 +126,8 @@
                                             <td>
                                                 {% if col_key == 'nama' %}
                                                     {{ k.nama }}
+                                                {% elif col_key == 'nama_catatan_kehadiran' %}  {# 🔹 Tambahkan pengecekan ini #}
+                                                    {{ k.nama_catatan_kehadiran|default:"-" }}
                                                 {% elif col_key == 'email' %}
                                                     {{ k.user.email }}
                                                 {% elif col_key == 'jabatan' %}
@@ -176,7 +166,7 @@
                             </tr>
                         {% endif %}
                     </tbody>
-                </table>
+                </table>                
             </div>
         </div>
     </div>

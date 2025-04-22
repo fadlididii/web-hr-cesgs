@@ -1,0 +1,236 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<!-- 🔹 Header Halaman -->
+<div class="header pb-6 d-flex align-items-center" 
+    style="min-height: 400px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
+    <span class="mask bg-gradient-primary opacity-8"></span>
+    <div class="container-fluid d-flex align-items-center">
+        <div class="row">
+            <div class="col-lg-7 col-md-10">
+                <h1 class="display-2 text-white">Manajemen Absensi</h1>
+                <p class="text-white mt-0 mb-4">Kelola data absensi karyawan secara real-time dengan fitur unggah dan pencarian data.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mt--4">
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Upload Data Absensi</h3>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="font-weight-bold">Pilih Bulan</label>
+                        {{ form.bulan }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="font-weight-bold">Pilih Tahun</label>
+                        {{ form.tahun }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="font-weight-bold">Aturan Absensi</label>
+                        {{ form.rules }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="font-weight-bold">Upload File</label>
+                        <input type="file" name="file" class="form-control">
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-success btn-lg w-50">Upload Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🔹 Tabel Data Absensi yang Telah Diupload -->
+    <div class="card shadow mt-4">
+        <div class="card-body">
+            <h3 class="mb-3">Data Absensi yang Terunggah</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Bulan</th>
+                            <th>Tahun</th>
+                            <th>Waktu Upload</th>
+                            <th>Nama File</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if uploaded_files %}
+                            {% for file in uploaded_files %}
+                                <tr>
+                                    <td>{{ file.bulan }}</td>
+                                    <td>{{ file.tahun }}</td>
+                                    <td>{{ file.created_at|date:"d M Y, H:i" }}</td>
+                                    <td>
+                                        {% if file.file_url %}
+                                            <a href="{{ file.file_url }}" download>{{ file.nama_file }}</a>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{% url 'hapus_absensi_bulanan' %}" onsubmit="return confirm('Hapus semua absensi untuk bulan ini?')">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="bulan" value="{{ file.bulan }}">
+                                            <input type="hidden" name="tahun" value="{{ file.tahun }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">🗑 Hapus</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-muted text-center">Belum ada data absensi yang diunggah.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 🔹 Form Pencarian dan Filter -->
+    <div class="card shadow mt-4">
+        <div class="card-body">
+            <h3 class="mb-3">Lihat Data Absensi</h3>
+            <form method="GET">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>Pilih Bulan</label>
+                        <select name="bulan" class="form-control">
+                            {% for num, nama_bulan in bulan_choices %}
+                                <option value="{{ num }}" {% if num == selected_bulan %}selected{% endif %}>
+                                    {{ nama_bulan }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Pilih Tahun</label>
+                        <select name="tahun" class="form-control">
+                            {% for tahun in tahun_choices %}
+                                <option value="{{ tahun }}" {% if tahun == selected_tahun %}selected{% endif %}>
+                                    {{ tahun }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Cari Nama Karyawan</label>
+                        <input type="text" name="q" class="form-control" placeholder="Masukkan nama" value="{{ query }}">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-info w-100">Cari Data</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 🔹 Tabel Absensi -->
+    <div class="card shadow mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Data Absensi untuk {{ selected_bulan }}/{{ selected_tahun }}</h3>
+            <a href="{% url 'export_absensi_excel' %}?bulan={{ selected_bulan }}&tahun={{ selected_tahun }}&q={{ query }}"
+            class="btn btn-success btn-sm">
+                📁 Download Excel
+            </a>
+        </div>
+
+        <div class="card-body table-responsive">
+            {% if absensi_list %}
+            <table class="table table-bordered table-hover text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Nama</th>
+                        <th>Tanggal</th>
+                        <th>Jam Masuk</th>
+                        <th>Jam Keluar</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for absensi in absensi_list %}
+                    <tr>
+                        <td>{{ absensi.id_karyawan.nama }}</td>
+                        <td>{{ absensi.tanggal|date:"d M Y" }}</td>
+                        <td>{{ absensi.jam_masuk|default:"-" }}</td>
+                        <td>{{ absensi.jam_keluar|default:"-" }}</td>
+                        <td>
+                            <span class="badge
+                                {% if absensi.status_absensi == 'Hadir' %}badge-success
+                                {% elif absensi.status_absensi == 'Izin' %}badge-warning
+                                {% elif absensi.status_absensi == 'Sakit' %}badge-danger
+                                {% elif absensi.status_absensi == 'Libur' %}badge-info
+                                {% else %}badge-secondary{% endif %}">
+                                {{ absensi.status_absensi }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'delete_absensi' absensi.id_absensi %}" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Yakin ingin menghapus data ini?')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- 🔹 PAGINASI (DIPERBAIKI) -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mt-4">
+                    {% if absensi_list.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&q={{ query }}&bulan={{ selected_bulan }}&tahun={{ selected_tahun }}" aria-label="First">
+                                <span>&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ absensi_list.previous_page_number }}&q={{ query }}&bulan={{ selected_bulan }}&tahun={{ selected_tahun }}" aria-label="Previous">
+                                <span>‹</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Tampilkan halaman yang sedang dibuka -->
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ absensi_list.number }}
+                        </span>
+                    </li>
+
+                    {% if absensi_list.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ absensi_list.next_page_number }}&q={{ query }}&bulan={{ selected_bulan }}&tahun={{ selected_tahun }}" aria-label="Next">
+                                <span>›</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ absensi_list.paginator.num_pages }}&q={{ query }}&bulan={{ selected_bulan }}&tahun={{ selected_tahun }}" aria-label="Last">
+                                <span>&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% else %}
+                <p class="text-center text-muted">⚠ Tidak ada data absensi untuk bulan ini.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

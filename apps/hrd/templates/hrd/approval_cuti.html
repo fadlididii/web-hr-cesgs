@@ -1,0 +1,233 @@
+{% extends 'layouts/base.html' %}
+{% block title %} Approval Cuti {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-12">
+          <h2 class="text-white">Approval Pengajuan Cuti & Tidak Ambil Cuti Bersama</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+
+  <!-- Pengajuan Cuti -->
+  <div class="card mb-4 shadow">
+    <div class="card-header">
+      <h4 class="mb-0">Pengajuan Cuti</h4>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Nama</th>
+            <th>Jenis</th>
+            <th>Tanggal</th>
+            <th>File</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in daftar_cuti %}
+          <tr>
+            <td>{{ c.id_karyawan.nama }}</td>
+            <td>{{ c.get_jenis_cuti_display }}</td>
+            <td>{{ c.tanggal_mulai }} s.d. {{ c.tanggal_selesai }}</td>
+            <td>
+              {% if c.file_pengajuan %}
+                <a href="{{ c.file_pengajuan.url }}" target="_blank">Lihat</a>
+              {% else %} - {% endif %}
+            </td>
+            <!-- CUTI -->
+            <td>
+              <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="jenis" value="cuti">
+                <input type="hidden" name="cuti_id" value="{{ c.id }}">
+                <input type="file" name="file_persetujuan" class="form-control-file" style="width: 140px;">
+                <button type="submit" name="aksi" value="disetujui" class="btn btn-success btn-sm mr-1">✓</button>
+                <button type="button" class="btn btn-danger btn-sm"
+                        onclick="openFeedbackModal('cuti', '{{ c.id }}')">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted">Tidak ada pengajuan cuti</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pengajuan Tidak Ambil Cuti -->
+  <div class="card shadow">
+    <div class="card-header">
+      <h4 class="mb-0">Pengajuan Tidak Ambil Cuti Bersama</h4>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Nama</th>
+            <th>Tanggal</th>
+            <th>Alasan</th>
+            <th>File</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in daftar_tidak_ambil %}
+          <tr>
+            <td>{{ t.id_karyawan.nama }}</td>
+            <td>
+                {% for tanggal in t.tanggal.all %}
+                  <span class="badge badge-info">{{ tanggal.tanggal|date:"d M Y" }} - {{ tanggal.keterangan }}</span><br>
+                {% empty %}
+                  <span class="text-muted">Tidak ada tanggal</span>
+                {% endfor %}
+            </td>
+            <td>{{ t.alasan }}</td>
+            <td>
+              {% if t.file_pengajuan %}
+                <a href="{{ t.file_pengajuan.url }}" target="_blank">Lihat</a>
+              {% else %} - {% endif %}
+            </td>
+            <!-- TIDAK AMBIL CUTI -->
+            <td>
+              <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="jenis" value="tidak_ambil">
+                <input type="hidden" name="tidak_ambil_id" value="{{ t.id }}">
+                <button type="submit" name="aksi" value="disetujui" class="btn btn-success btn-sm mr-1">✓</button>
+                <button type="button" class="btn btn-danger btn-sm"
+                        onclick="openFeedbackModal('tidak_ambil', '{{ t.id }}')">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted">Tidak ada pengajuan tidak ambil cuti</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- MODAL FEEDBACK -->
+      <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <form method="post" enctype="multipart/form-data" id="modal-feedback-form">
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title">Alasan Penolakan</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" name="jenis" id="modal-jenis">
+                <input type="hidden" name="cuti_id" id="modal-cuti-id">
+                <input type="hidden" name="tidak_ambil_id" id="modal-tidak-ambil-id">
+                <textarea name="feedback_hr" class="form-control" placeholder="Berikan alasan penolakan..." rows="3" required></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" name="aksi" value="ditolak" class="btn btn-danger">Kirim</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Riwayat Cuti Seluruh Karyawan -->
+    <div class="card mt-4">
+        <div class="card-header">
+        <h4 class="mb-0">Riwayat Cuti Seluruh Karyawan</h4>
+        </div>
+
+        <div class="card-body table-responsive">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <form method="get" class="form-inline">
+                    <input type="text" name="nama" class="form-control mr-2" placeholder="Cari nama karyawan..." value="{{ request.GET.nama }}">
+                    <input type="number" name="tahun" class="form-control mr-2" placeholder="Tahun..." value="{{ request.GET.tahun }}">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'approval_cuti' %}" class="btn btn-secondary ml-2">Reset</a>
+                </form>
+            
+                <a href="{% url 'export_riwayat_cuti_excel' %}?nama={{ request.GET.nama }}&tahun={{ request.GET.tahun }}" class="btn btn-success">
+                    📁 Download Excel
+                </a>
+            </div>
+        <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+            <tr>
+                <th>Nama</th>
+                <th>Jenis</th>
+                <th>Mulai</th>
+                <th>Selesai</th>
+                <th>Status</th>
+                <th>Disetujui Oleh</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in riwayat_cuti %}
+            <tr>
+                <td>{{ item.id_karyawan.nama }}</td>
+                <td>{{ item.get_jenis_cuti_display }}</td>
+                <td>{{ item.tanggal_mulai }}</td>
+                <td>{{ item.tanggal_selesai }}</td>
+                <td>
+                {% if item.status == 'disetujui' %}
+                    <span class="badge badge-success">{{ item.status }}</span>
+                {% else %}
+                    <span class="badge badge-danger">{{ item.status }}</span>
+                {% endif %}
+                </td>
+                <td>
+                  {% if item.approval %}
+                    {% if item.approval.karyawan %}
+                      {{ item.approval.karyawan.nama }}
+                    {% else %}
+                      {{ item.approval.get_full_name|default:item.approval.username }}
+                    {% endif %}
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted">Belum ada riwayat cuti.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+  {% include 'includes/footer.html' %}
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  function openFeedbackModal(jenis, id) {
+    $('#modal-jenis').val(jenis);
+    $('#modal-cuti-id').val('');
+    $('#modal-tidak-ambil-id').val('');
+
+    if (jenis === 'cuti') {
+      $('#modal-cuti-id').val(id);
+    } else {
+      $('#modal-tidak-ambil-id').val(id);
+    }
+
+    $('#feedbackModal').modal('show');
+  }
+</script>
+
+{% endblock javascripts %}

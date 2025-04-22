@@ -1,0 +1,77 @@
+{% extends 'layouts/base.html' %}
+{% block title %} Input Cuti Bersama {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row py-4">
+        <div class="col-12">
+          <h2 class="text-white">Input Cuti Bersama</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <!-- Form Input -->
+  <div class="card">
+    <div class="card-header">
+      <h4 class="mb-0">Tambah Cuti Bersama</h4>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            {{ form.tanggal.label_tag }} {{ form.tanggal }}
+          </div>
+          <div class="form-group col-md-6">
+            {{ form.keterangan.label_tag }} {{ form.keterangan }}
+          </div>
+          <div class="form-group col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Simpan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabel Riwayat -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h4 class="mb-0">Riwayat Cuti Bersama</h4>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-hover text-center">
+        <thead class="thead-light">
+          <tr>
+            <th>Tanggal</th>
+            <th>Keterangan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cuti in daftar_cuti_bersama %}
+          <tr>
+            <td>{{ cuti.tanggal|date:"d M Y" }}</td>
+            <td>{{ cuti.keterangan|default:"-" }}</td>
+            <td>
+              <a href="?hapus_id={{ cuti.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data ini?')">
+                <i class="fas fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-muted">Belum ada data cuti bersama.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% include 'includes/footer.html' %}
+</div>
+
+{% endblock content %}

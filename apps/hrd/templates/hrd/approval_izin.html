@@ -1,0 +1,134 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Approval Izin {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row py-4">
+        <div class="col-12">
+          <h6 class="h2 text-white d-inline-block mb-0">Approval Izin</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="card">
+    <div class="card-body">
+      {% if daftar_izin %}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead class="thead-light">
+            <tr>
+              <th>Nama</th>
+              <th>Jenis Izin</th>
+              <th>Tanggal</th>
+              <th>Alasan</th>
+              <th>File</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for izin in daftar_izin %}
+            <tr>
+              <td>{{ izin.id_karyawan.nama }}</td>
+              <td>{{ izin.get_jenis_izin_display }}</td>
+              <td>{{ izin.tanggal_izin }}</td>
+              <td>{{ izin.alasan }}</td>
+              <td>
+                {% if izin.file_pengajuan %}
+                <a href="{{ izin.file_pengajuan.url }}" target="_blank">Lihat</a>
+                {% else %}-{% endif %}
+              </td>
+              <td>
+                <form method="post" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="izin_id" value="{{ izin.id }}">
+                  <button type="submit" name="aksi" value="disetujui" class="btn btn-success btn-sm">Setujui</button>
+                  <button type="submit" name="aksi" value="ditolak" class="btn btn-danger btn-sm">Tolak</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-muted">Tidak ada pengajuan izin menunggu.</p>
+      {% endif %}
+    </div>
+  </div>
+  <!-- Riwayat Izin Seluruh Karyawan -->
+<div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0">Riwayat Izin Seluruh Karyawan</h5>
+    </div>
+    <div class="card-body table-responsive">
+      <!-- Filter & Export -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <form method="get" class="form-inline">
+          <input type="text" name="nama" class="form-control mr-2" placeholder="Cari nama karyawan..." value="{{ request.GET.nama }}">
+          <input type="number" name="tahun" class="form-control mr-2" placeholder="Tahun..." value="{{ request.GET.tahun }}">
+          <button type="submit" class="btn btn-primary">Filter</button>
+          <a href="{% url 'approval_izin' %}" class="btn btn-secondary ml-2">Reset</a>
+        </form>
+  
+        <a href="{% url 'export_riwayat_izin_excel' %}?nama={{ request.GET.nama }}&tahun={{ request.GET.tahun }}" class="btn btn-success">
+          📁 Download Excel
+        </a>
+      </div>
+  
+      <!-- Tabel Riwayat -->
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Nama</th>
+            <th>Jenis</th>
+            <th>Tanggal</th>
+            <th>Alasan</th>
+            <th>Status</th>
+            <th>Disetujui Oleh</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for izin in riwayat_izin %}
+          <tr>
+            <td>{{ izin.id_karyawan.nama }}</td>
+            <td>{{ izin.get_jenis_izin_display }}</td>
+            <td>{{ izin.tanggal_izin }}</td>
+            <td>{{ izin.alasan }}</td>
+            <td>
+              {% if izin.status == 'disetujui' %}
+                <span class="badge badge-success">{{ izin.status }}</span>
+              {% elif izin.status == 'ditolak' %}
+                <span class="badge badge-danger">{{ izin.status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if izin.approval %}
+                {% if izin.approval.karyawan %}
+                  {{ izin.approval.karyawan.nama }}
+                {% else %}
+                  {{ izin.approval.get_full_name|default:izin.approval.username }}
+                {% endif %}
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted">Belum ada riwayat izin.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  {% include "includes/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block javascripts %}{% endblock javascripts %}

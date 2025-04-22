@@ -1,0 +1,58 @@
+{% extends 'layouts/base.html' %}
+{% block title %} Jatah Cuti Karyawan {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row py-4">
+        <div class="col-12">
+          <h2 class="text-white">Jatah Cuti Karyawan</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="card">
+    <div class="card-body table-responsive">
+    <form method="get" class="form-inline mb-3">
+        <div class="form-group mr-2">
+            <label for="tahun" class="mr-2">Tahun</label>
+            <input type="number" name="tahun" id="tahun" class="form-control" value="{{ filter_tahun }}">
+        </div>
+        <div class="form-group mr-2">
+            <label for="nama" class="mr-2">Nama</label>
+            <input type="text" name="nama" id="nama" class="form-control" value="{{ filter_nama }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{% url 'lihat_jatah_cuti' %}" class="btn btn-secondary ml-2">Reset</a>
+    </form>
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Nama</th>
+            <th>Tahun</th>
+            <th>Total Cuti</th>
+            <th>Sisa Cuti</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in data %}
+          <tr>
+            <td>{{ item.karyawan.nama }}</td>
+            <td>{{ item.tahun }}</td>
+            <td>{{ item.total_cuti }}</td>
+            <td>{{ item.sisa_cuti }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-muted">Belum ada data jatah cuti.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% include "includes/footer.html" %}
+</div>
+{% endblock content %}

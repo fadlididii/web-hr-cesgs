@@ -6,6 +6,7 @@ Copyright (c) 2019 - present AppSeed.us
 import os
 from decouple import config
 from unipath import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,6 +24,11 @@ AUTH_USER_MODEL = 'authentication.User'
 # load production server from .env
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', config('SERVER', default='127.0.0.1')]
 
+# media save
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -36,6 +42,12 @@ INSTALLED_APPS = [
     'apps.hrd', # hrd 
     'apps.karyawan', # karyawan
     'apps.profil', # profil
+    'apps.absensi', # absensi
+    'django_cron',
+]
+
+CRON_CLASSES = [
+    "apps.hrd.cron.CekKontrakKaryawan",
 ]
 
 MIDDLEWARE = [
@@ -95,19 +107,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 #     }
 # }
 
-import environ
 
-env = environ.Env()
-environ.Env.read_env()
+load_dotenv()
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT', default=5432),
+        'NAME': os.getenv('DB_NAME', default=''),
+        'USER': os.getenv('DB_USER', default=''),
+        'PASSWORD': os.getenv('DB_PASSWORD', default=''),
+        'HOST': os.getenv('DB_HOST', default='localhost'),
+        'PORT': os.getenv('DB_PORT', default='5432'),
     }
 }
 

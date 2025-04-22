@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<div class="header pb-6 d-flex align-items-center" 
+    style="min-height: 400px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
+    <span class="mask bg-gradient-primary opacity-8"></span>
+    <div class="container-fluid d-flex align-items-center">
+        <div class="row">
+            <div class="col-lg-7 col-md-10">
+                <h1 class="display-2 text-white">Manajemen Rules</h1>
+                <p class="text-white mt-0 mb-4">Kelola peraturan jam datang dan jam pulang karyawan.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mt--4">
+    <div class="card">
+        <div class="card-body">
+            <h2>Manajemen Rules Absensi</h2>
+            <div class="mb-3">
+                <a href="{% url 'create_rule' %}" class="btn btn-primary">+ Tambah Aturan</a>
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nama Aturan</th>
+                        <th>Jam Masuk</th>
+                        <th>Jam Keluar</th>
+                        <th>Toleransi Telat</th>
+                        <th>Maksimal Izin</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rule in rules %}
+                    <tr>
+                        <td>{{ rule.nama_rule }}</td>
+                        <td>{{ rule.jam_masuk }}</td>
+                        <td>{{ rule.jam_keluar }}</td>
+                        <td>{{ rule.toleransi_telat }} menit</td>
+                        <td>{{ rule.maksimal_izin }} kali</td>
+                        <td>
+                            <a href="{% url 'update_rule' rule.id_rules %}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="{% url 'delete_rule' rule.id_rules %}" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">Hapus</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
