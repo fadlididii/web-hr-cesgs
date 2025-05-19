@@ -27,10 +27,11 @@ class Absensi(models.Model):
     status_absensi = models.CharField(
         max_length=20, 
         choices=[
-            ('Hadir', 'Hadir'),
+            ('Tepat Waktu', 'Tepat Waktu'),
             ('Terlambat', 'Terlambat'),
             ('Izin', 'Izin'),
             ('Sakit', 'Sakit'),
+            ('Cuti', 'Cuti'),
             ('Libur', 'Libur')
         ]
     )

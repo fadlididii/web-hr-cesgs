@@ -28,7 +28,8 @@
             <th>Nama</th>
             <th>Jenis</th>
             <th>Tanggal</th>
-            <th>File</th>
+            <th>Bukti Atasan</th>
+            <th>File yang Telah Ditandatangani</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -41,16 +42,22 @@
             <td>
               {% if c.file_pengajuan %}
                 <a href="{{ c.file_pengajuan.url }}" target="_blank">Lihat</a>
-              {% else %} - {% endif %}
+              {% else %}-{% endif %}
             </td>
+            
+            <td>
+              {% if c.file_dokumen_formal %}
+                <a href="{{ c.file_dokumen_formal.url }}" target="_blank">Lihat</a>
+              {% else %}-{% endif %}
+            </td>            
             <!-- CUTI -->
             <td>
               <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
                 {% csrf_token %}
                 <input type="hidden" name="jenis" value="cuti">
                 <input type="hidden" name="cuti_id" value="{{ c.id }}">
-                <input type="file" name="file_persetujuan" class="form-control-file" style="width: 140px;">
-                <button type="submit" name="aksi" value="disetujui" class="btn btn-success btn-sm mr-1">✓</button>
+                <button type="button" class="btn btn-success btn-sm mr-1"
+                onclick="openApproveModal('{{ c.id }}')">✓</button>
                 <button type="button" class="btn btn-danger btn-sm"
                         onclick="openFeedbackModal('cuti', '{{ c.id }}')">✕</button>
               </form>
@@ -61,6 +68,33 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+    <!-- MODAL APPROVAL -->
+    <div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="jenis" value="cuti">
+            <input type="hidden" name="cuti_id" id="approve-cuti-id">
+            <div class="modal-header">
+              <h5 class="modal-title">Upload File Persetujuan</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="file_persetujuan">File Persetujuan (PDF/DOCX)</label>
+                <input type="file" name="file_persetujuan" class="form-control" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" name="aksi" value="disetujui" class="btn btn-success">Kirim Persetujuan</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -130,7 +164,7 @@
                 <input type="hidden" name="jenis" id="modal-jenis">
                 <input type="hidden" name="cuti_id" id="modal-cuti-id">
                 <input type="hidden" name="tidak_ambil_id" id="modal-tidak-ambil-id">
-                <textarea name="feedback_hr" class="form-control" placeholder="Berikan alasan penolakan..." rows="3" required></textarea>
+                <textarea name="alasan_ditolak" class="form-control" placeholder="Berikan alasan penolakan..." rows="3" required></textarea>
               </div>
               <div class="modal-footer">
                 <button type="submit" name="aksi" value="ditolak" class="btn btn-danger">Kirim</button>
@@ -203,6 +237,9 @@
             {% endfor %}
             </tbody>
         </table>
+        
+        <!-- Tambahkan paginasi di sini -->
+        {% include 'includes/pagination.html' with page_obj=riwayat_cuti %}
         </div>
     </div>
 
@@ -227,6 +264,13 @@
     }
 
     $('#feedbackModal').modal('show');
+  }
+</script>
+
+<script>
+  function openApproveModal(id) {
+    $('#approve-cuti-id').val(id);
+    $('#approveModal').modal('show');
   }
 </script>
 

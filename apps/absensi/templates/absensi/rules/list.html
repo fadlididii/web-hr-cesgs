@@ -8,7 +8,7 @@
     <div class="container-fluid d-flex align-items-center">
         <div class="row">
             <div class="col-lg-7 col-md-10">
-                <h1 class="display-2 text-white">Manajemen Rules</h1>
+                <h1 class="display-2 text-white">Rules Absensi</h1>
                 <p class="text-white mt-0 mb-4">Kelola peraturan jam datang dan jam pulang karyawan.</p>
             </div>
         </div>
@@ -50,6 +50,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% include 'includes/pagination.html' with page_obj=rules %}
         </div>
     </div>
 </div>

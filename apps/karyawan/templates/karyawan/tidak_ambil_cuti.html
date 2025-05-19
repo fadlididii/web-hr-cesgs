@@ -59,6 +59,7 @@
             <th>Tanggal</th>
             <th>Status</th>
             <th>Pengajuan</th>
+            <th>Feedback HR</th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -67,7 +68,9 @@
             <tr>
               <td>
                 {% for t in item.tanggal.all %}
-                  <span class="badge badge-info">{{ t.tanggal }}</span>
+                  <span class="badge badge-info">{{ t.tanggal|date:"d M Y" }}</span>
+                {% empty %}
+                  <span class="text-muted">Tidak ada tanggal</span>
                 {% endfor %}
               </td>
               <td>
@@ -81,6 +84,13 @@
               </td>
               <td>{{ item.tanggal_pengajuan }}</td>
               <td>
+                {% if item.status == 'ditolak' %}
+                  {{ item.feedback_hr|default:"-" }}
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
                 {% if item.status == 'menunggu' %}
                   <a href="{% url 'hapus_tidak_ambil_cuti' item.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus pengajuan ini?')">
                     <i class="fas fa-trash-alt"></i> Hapus
@@ -91,10 +101,11 @@
               </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center text-muted">Belum ada pengajuan.</td></tr>
+            <tr><td colspan="5" class="text-center text-muted">Belum ada pengajuan.</td></tr>
             {% endfor %}
         </tbody>
       </table>
+      {% include 'includes/pagination.html' with page_obj=riwayat %}
     </div>
   </div>
 

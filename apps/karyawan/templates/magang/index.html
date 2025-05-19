@@ -80,12 +80,14 @@
                 <td>{{ absen.jam_masuk|default:"-" }}</td>
                 <td>{{ absen.jam_keluar|default:"-" }}</td>
                 <td>
-                  {% if absen.status == 'Hadir' %}
-                    <span class="badge badge-success">Hadir</span>
+                  {% if absen.status == 'Tepat Waktu' %}
+                    <span class="badge badge-success">Tepat Waktu</span>
                   {% elif absen.status == 'Sakit' %}
                     <span class="badge badge-warning">Sakit</span>
                   {% elif absen.status == 'Izin' %}
                     <span class="badge badge-info">Izin</span>
+                  {% elif absen.status == 'Cuti' %}
+                    <span class="badge badge-primary">Cuti</span>
                   {% else %}
                     <span class="badge badge-danger">Alpha</span>
                   {% endif %}

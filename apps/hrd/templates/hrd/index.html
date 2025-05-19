@@ -3,7 +3,16 @@
 {% block title %} Dashboard {% endblock title %}
 
 <!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+{% endblock stylesheets %}
+
+<style>
+  #calendar {
+    min-height: 600px;
+  }
+</style>
+
 
 {% block content %}
 
@@ -22,97 +31,94 @@
                 </ol>
               </nav>
             </div>
-            <div class="col-lg-6 col-5 text-right">
-              <a href="#" class="btn btn-sm btn-neutral">New</a>
-              <a href="#" class="btn btn-sm btn-neutral">Filters</a>
-            </div>
           </div>
           <!-- Card stats -->
           <div class="row">
+
+            <!-- Total Karyawan Tetap Aktif -->
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
-                <!-- Card body -->
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Total traffic</h5>
-                      <span class="h2 font-weight-bold mb-0">350,897</span>
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Karyawan</h5>
+                      <span class="h2 font-weight-bold mb-0">{{ total_karyawan_tetap }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
-                        <i class="ni ni-active-40"></i>
+                        <i class="ni ni-single-02"></i>
                       </div>
                     </div>
                   </div>
                   <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
+                    <span class="text-muted"><i class="fa fa-info-circle"></i> Karyawan tetap aktif</span>
                   </p>
                 </div>
               </div>
             </div>
+
+            <!-- Total Cuti -->
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
-                <!-- Card body -->
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">New users</h5>
-                      <span class="h2 font-weight-bold mb-0">2,356</span>
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Cuti</h5>
+                      <span class="h2 font-weight-bold mb-0">{{ total_cuti }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
-                        <i class="ni ni-chart-pie-35"></i>
+                        <i class="ni ni-calendar-grid-58"></i>
                       </div>
                     </div>
                   </div>
                   <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
+                    <span class="text-success mr-2"><i class="fa fa-calendar-alt"></i> Bulan ini</span>
+                    <span class="text-nowrap">{{ cuti_bulan_ini }} disetujui</span>
                   </p>
                 </div>
               </div>
             </div>
+
+            <!-- Total Izin WFH -->
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
-                <!-- Card body -->
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Sales</h5>
-                      <span class="h2 font-weight-bold mb-0">924</span>
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Izin WFH</h5>
+                      <span class="h2 font-weight-bold mb-0">{{ total_izin_wfh }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
-                        <i class="ni ni-money-coins"></i>
+                        <i class="ni ni-laptop"></i>
                       </div>
                     </div>
                   </div>
                   <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
+                    <span class="text-primary"><i class="fa fa-home"></i> Bulan ini</span>
                   </p>
                 </div>
               </div>
             </div>
+
+            <!-- Total Izin Sakit -->
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
-                <!-- Card body -->
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Performance</h5>
-                      <span class="h2 font-weight-bold mb-0">49,65%</span>
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Izin Sakit</h5>
+                      <span class="h2 font-weight-bold mb-0">{{ total_izin_sakit }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
-                        <i class="ni ni-chart-bar-32"></i>
+                        <i class="ni ni-ambulance"></i>
                       </div>
                     </div>
                   </div>
                   <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
+                    <span class="text-info"><i class="fa fa-file-medical"></i> {{ sakit_bulan_ini }} disetujui</span>
                   </p>
                 </div>
               </div>
@@ -122,316 +128,195 @@
       </div>
     </div>
 
+
+
     <!-- Page content -->
     <div class="container-fluid mt--6">
-      <div class="row">
-        <div class="col-xl-8">
-          <div class="card bg-default">
-            <div class="card-header bg-transparent">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h6 class="text-light text-uppercase ls-1 mb-1">Overview</h6>
-                  <h5 class="h3 text-white mb-0">Sales value</h5>
-                </div>
-                <div class="col">
-                  <ul class="nav nav-pills justify-content-end">
-                    <li class="nav-item mr-2 mr-md-0" data-toggle="chart" data-target="#chart-sales-dark" data-update='{"data":{"datasets":[{"data":[0, 20, 10, 30, 15, 40, 20, 60, 60]}]}}' data-prefix="$" data-suffix="k">
-                      <a href="#" class="nav-link py-2 px-3 active" data-toggle="tab">
-                        <span class="d-none d-md-block">Month</span>
-                        <span class="d-md-none">M</span>
-                      </a>
-                    </li>
-                    <li class="nav-item" data-toggle="chart" data-target="#chart-sales-dark" data-update='{"data":{"datasets":[{"data":[0, 20, 5, 25, 10, 30, 15, 40, 40]}]}}' data-prefix="$" data-suffix="k">
-                      <a href="#" class="nav-link py-2 px-3" data-toggle="tab">
-                        <span class="d-none d-md-block">Week</span>
-                        <span class="d-md-none">W</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Chart -->
-              <div class="chart">
-                
-                <!-- Chart wrapper -->
-                <canvas id="chart-sales-dark" class="chart-canvas"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-4">
-          <div class="card">
-            <div class="card-header bg-transparent">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6>
-                  <h5 class="h3 mb-0">Total orders</h5>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Chart -->
-              <div class="chart">
-                <canvas id="chart-bars" class="chart-canvas"></canvas>
-              </div>
-            </div>
-          </div>
+      <!-- Filter Bulan & Tahun -->
+      <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+          <form method="GET" class="form-inline">
+            <label for="filter-bulan" class="mr-2 filter-label text-white font-weight-bold">Bulan:</label>
+            <select id="filter-bulan" name="bulan" class="form-control form-control-sm mr-3 bg-white text-dark" style="min-width: 120px;">
+              {% for num, nama_bulan in bulan_choices %}
+                <option value="{{ num }}" {% if num == selected_bulan %}selected{% endif %}>{{ nama_bulan }}</option>
+              {% endfor %}
+            </select>
+      
+            <label for="filter-tahun" class="mr-2 filter-label text-white font-weight-bold">Tahun:</label>
+            <select id="filter-tahun" name="tahun" class="form-control form-control-sm mr-3 bg-white text-dark" style="min-width: 100px;">
+              {% for value, label in tahun_choices %}
+                <option value="{{ value }}" {% if selected_tahun == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+      
+            <button type="submit" id="apply-filter" class="btn btn-sm btn-light text-primary font-weight-bold">Terapkan</button>
+          </form>
         </div>
       </div>
+      
+
+      <!-- Grafik Terlambat dan Tepat Waktu -->
       <div class="row">
-        <div class="col-xl-8">
+        <!-- Terlambat -->
+        <div class="col-xl-6">
           <div class="card">
-            <div class="card-header border-0">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h3 class="mb-0">Page visits</h3>
-                </div>
-                <div class="col text-right">
-                  <a href="#!" class="btn btn-sm btn-primary">See all</a>
-                </div>
-              </div>
+            <div class="card-header bg-transparent">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">Kinerja Karyawan</h6>
+              <h5 class="h3 mb-0">Top 5 Karyawan Terlambat</h5>
             </div>
-            <div class="table-responsive">
-              <!-- Projects table -->
-              <table class="table align-items-center table-flush">
-                <thead class="thead-light">
-                  <tr>
-                    <th scope="col">Page name</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col">Unique users</th>
-                    <th scope="col">Bounce rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      /argon/
-                    </th>
-                    <td>
-                      4,569
-                    </td>
-                    <td>
-                      340
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-up text-success mr-3"></i> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/index.html
-                    </th>
-                    <td>
-                      3,985
-                    </td>
-                    <td>
-                      319
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-down text-warning mr-3"></i> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/charts.html
-                    </th>
-                    <td>
-                      3,513
-                    </td>
-                    <td>
-                      294
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-down text-warning mr-3"></i> 36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/tables.html
-                    </th>
-                    <td>
-                      2,050
-                    </td>
-                    <td>
-                      147
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-up text-success mr-3"></i> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/profile.html
-                    </th>
-                    <td>
-                      1,795
-                    </td>
-                    <td>
-                      190
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-down text-danger mr-3"></i> 46,53%
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="card-body">
+              <div class="chart">
+                <canvas id="chart-late-employees" class="chart-canvas"></canvas>
+              </div>
             </div>
           </div>
         </div>
-        <div class="col-xl-4">
+
+        <!-- Tepat Waktu -->
+        <div class="col-xl-6">
           <div class="card">
-            <div class="card-header border-0">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h3 class="mb-0">Social traffic</h3>
-                </div>
-                <div class="col text-right">
-                  <a href="#!" class="btn btn-sm btn-primary">See all</a>
-                </div>
-              </div>
+            <div class="card-header bg-transparent">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">Kinerja Karyawan</h6>
+              <h5 class="h3 mb-0">Top 5 Karyawan Tepat Waktu</h5>
             </div>
-            <div class="table-responsive">
-              <!-- Projects table -->
-              <table class="table align-items-center table-flush">
-                <thead class="thead-light">
-                  <tr>
-                    <th scope="col">Referral</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      Facebook
-                    </th>
-                    <td>
-                      1,480
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">60%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-danger" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      Facebook
-                    </th>
-                    <td>
-                      5,480
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">70%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      Google
-                    </th>
-                    <td>
-                      4,807
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">80%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-primary" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      Instagram
-                    </th>
-                    <td>
-                      3,678
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">75%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      twitter
-                    </th>
-                    <td>
-                      2,645
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">30%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-warning" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="card-body">
+              <div class="chart">
+                <canvas id="chart-ontime-employees" class="chart-canvas"></canvas>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="row">
-        <div class="col-xl-6">
-            <div class="card">
-                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase text-muted ls-1 mb-1">Kinerja Karyawan</h6>
-                        <h5 class="h3 mb-0">Top 5 Karyawan Terlambat</h5>
-                    </div>
-                    <!-- Form Filter -->
-                    <form method="GET" class="d-flex">
-                        <select name="bulan" class="form-control form-control-sm mr-2">
-                            {% for num, nama_bulan in bulan_choices %}
-                                <option value="{{ num }}" {% if num == selected_bulan %}selected{% endif %}>
-                                    {{ nama_bulan }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <select name="tahun" class="form-control form-control-sm mr-2">
-                          {% for value, label in tahun_choices %}
-                              <option value="{{ value }}" {% if selected_tahun == value %}selected{% endif %}>{{ label }}</option>
-                          {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-                    </form>
+        <div class="col-xl-8">
+          <div class="card">
+            <div class="card-header bg-transparent">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h6 class="text-uppercase text-muted ls-1 mb-1">Statistik Cuti & Izin</h6>
+                  <h5 class="h3 mb-0">Per Bulan - Tahun {{ selected_tahun }}</h5>
                 </div>
-                <div class="card-body">
-                    <!-- Chart -->
-                    <div class="chart">
-                        <canvas id="chart-late-employees" class="chart-canvas"></canvas>
-                    </div>
-                </div>
+              </div>
             </div>
+            <div class="card-body">
+              <div class="chart">
+                <canvas id="chart-cuti-izin" class="chart-canvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>        
+        <div class="col-xl-4">
+          <div class="card">
+            <div class="card-header bg-transparent">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h6 class="text-uppercase text-muted ls-1 mb-1">Tren Cuti</h6>
+                  <h3 class="h3 mb-0">Top Jenis Cuti</h3>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart">
+                <canvas id="chart-top-jenis-cuti" class="chart-canvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>        
+      </div>
+      <div class="row">
+        <div class="col-xl-4">
+          <div class="card">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">Pengajuan belum diproses</h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <a href="{% url 'approval_cuti' %}">Pengajuan Cuti</a>
+                  <span class="badge badge-primary badge-pill">{{ jumlah_cuti_menunggu }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <a href="{% url 'approval_izin' %}">Pengajuan Izin</a>
+                  <span class="badge badge-warning badge-pill">{{ jumlah_izin_menunggu }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <a href="{% url 'approval_cuti' %}">Tidak Ambil Cuti Bersama</a>
+                  <span class="badge badge-info badge-pill">{{ jumlah_tidak_ambil_cuti_menunggu }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-4">
+          <div class="card">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">Jumlah Karyawan per Divisi</h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                {% for divisi, jumlah in jumlah_per_divisi.items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  {{ divisi }}
+                  <span class="badge badge-success badge-pill">{{ jumlah }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">Tidak ada data divisi.</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-4">
+          <div class="card">
+            <div class="card-header bg-transparent">
+              <h3 class="mb-0">Libur Nasional Terdekat</h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush" id="libur-list">
+                {% for libur in page_obj_libur %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ libur.summary }}
+                    <span class="badge badge-danger badge-pill">{{ libur.date|date:"d M Y" }}</span>
+                  </li>
+                {% empty %}
+                  <li class="list-group-item text-muted">Tidak ada libur nasional terdekat.</li>
+                {% endfor %}
+              </ul>
+              <div class="mt-3 d-flex justify-content-between" id="pagination-controls">
+                {% if page_obj_libur.has_previous %}
+                  <a href="?page_libur={{ page_obj_libur.previous_page_number }}" class="btn btn-sm btn-outline-primary">
+                    &laquo; Sebelumnya
+                  </a>
+                {% else %}
+                  <span></span>
+                {% endif %}
+              
+                {% if page_obj_libur.has_next %}
+                  <a href="?page_libur={{ page_obj_libur.next_page_number }}" class="btn btn-sm btn-outline-primary ml-auto">
+                    Selanjutnya &raquo;
+                  </a>
+                {% endif %}
+              </div>                            
+            </div>
+          </div>
+        </div>     
+      </div>
+
+
+      <!-- Kalender HR -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="text-uppercase text-muted ls-1 mb-1">Calender</h6>
+              <h3 class="mb-0">Kalender Kegiatan CESGS</h3>
+            </div>
+            <div class="card-body">
+              <div id="calendar"></div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -448,33 +333,333 @@
   <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
   
   <script>
-      // Data dari Django context
-      var topLateNames = [{% for karyawan in top_5_late %}"{{ karyawan.id_karyawan__nama }}",{% endfor %}];
-      var topLateCounts = [{% for karyawan in top_5_late %}{{ karyawan.total_terlambat }},{% endfor %}];
+    // Data dari Django context
+    var topLateNames = [{% for karyawan in top_5_late %}"{{ karyawan.id_karyawan__nama }}",{% endfor %}];
+    var topLateCounts = [{% for karyawan in top_5_late %}{{ karyawan.total_terlambat }},{% endfor %}];
+    
+    var topOntimeNames = [{% for karyawan in top_5_ontime %}"{{ karyawan.nama }}",{% endfor %}];
+    var topOntimeCounts = [{% for karyawan in top_5_ontime %}{{ karyawan.total_tepat_waktu }},{% endfor %}];
   
-      // Render Chart.js
-      var ctx = document.getElementById("chart-late-employees").getContext("2d");
-      var myChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels: topLateNames,
-              datasets: [{
-                  label: 'Jumlah Keterlambatan',
-                  data: topLateCounts,
-                  backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                  borderColor: 'rgba(255, 99, 132, 1)',
-                  borderWidth: 1
-              }]
+    function createBarChart(canvasId, labels, data, labelName, bgColor, borderColor) {
+      var ctx = document.getElementById(canvasId).getContext("2d");
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: labelName,
+            data: data,
+            backgroundColor: bgColor,
+            borderColor: borderColor,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 1500,
+            easing: 'easeOutBounce'
           },
-          options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                  y: {
-                      beginAtZero: true
-                  }
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ": " + context.parsed.y;
+                }
               }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              font: {
+                weight: 'bold'
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 0,
+                autoSkip: false,
+                font: {
+                  size: 10
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
           }
+        }
       });
+    }
+  
+    // Panggil fungsi buat 2 chart
+    createBarChart(
+      "chart-late-employees",
+      topLateNames,
+      topLateCounts,
+      "Jumlah Keterlambatan",
+      "rgba(255, 99, 132, 0.5)",
+      "rgba(255, 99, 132, 1)"
+    );
+  
+    createBarChart(
+      "chart-ontime-employees",
+      topOntimeNames,
+      topOntimeCounts,
+      "Jumlah Tepat Waktu",
+      "rgba(75, 192, 192, 0.5)",
+      "rgba(75, 192, 192, 1)"
+    );
+  </script>
+  
+
+  <script>
+    const ctxCutiIzin = document.getElementById('chart-cuti-izin').getContext('2d');
+    const chartCutiIzin = new Chart(ctxCutiIzin, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+        datasets: [
+          {
+            label: 'Cuti',
+            data: {{ cuti_chart|safe }},
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.3,
+            borderWidth: 2
+          },
+          {
+            label: 'Izin',
+            data: {{ izin_chart|safe }},
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            tension: 0.3,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
+<!-- FullCalendar Assets -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+  #calendar {
+    min-height: 600px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+  }
+</style>
+
+<script>
+  // Inisialisasi calendar dinamis (boleh dipanggil ulang)
+  function initializeCalendar(events) {
+    const calendarEl = document.getElementById('calendar');
+    
+    // Hapus instance lama jika ada
+    if (window.calendarInstance) {
+      window.calendarInstance.destroy();
+    }
+
+    // Buat instance baru
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      height: 600,
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,listMonth'
+      },
+      locale: 'id',
+      firstDay: 1,
+      dayMaxEvents: true,
+      events: events || "/hrd/kalender/events/",
+      eventDidMount: function (info) {
+        if (info.event.extendedProps.description) {
+          new bootstrap.Tooltip(info.el, {
+            title: info.event.extendedProps.description || info.event.title,
+            placement: "top",
+            trigger: "hover",
+            container: "body"
+          });
+        }
+      }
+    });
+
+    calendar.render();
+    window.calendarInstance = calendar;
+  }
+
+  // Load saat halaman siap
+  document.addEventListener('DOMContentLoaded', function () {
+    const bulan = document.getElementById('filter-bulan')?.value;
+    const tahun = document.getElementById('filter-tahun')?.value;
+
+    if (bulan && tahun) {
+      // Ambil juga data events dari backend jika dibutuhkan
+      fetch(`/hrd/kalender/events/`)
+        .then(res => res.json())
+        .then(events => {
+          initializeCalendar(events);
+        })
+        .catch(err => {
+          console.error("Gagal memuat data kalender:", err);
+          initializeCalendar([]);  // Fallback kosong
+        });
+    } else {
+      initializeCalendar();  // Langsung load URL default
+    }
+  });
+</script>
+
+  
+  <script>
+    const ctxTopJenisCuti = document.getElementById('chart-top-jenis-cuti').getContext('2d');
+    const chartTopJenisCuti = new Chart(ctxTopJenisCuti, {
+      type: 'pie',
+      data: {
+        labels: {{ top_cuti_labels|safe }},
+        datasets: [{
+          label: 'Total Pengajuan',
+          data: {{ top_cuti_values|safe }},
+          backgroundColor: [
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)'
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.parsed || 0;
+                const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${label}: ${value} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+  <!-- paginasi libur -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const liburData = {{ libur_json|safe }};
+      const perPage = 3;
+      let currentPage = 1;
+  
+      function renderLibur() {
+        const listContainer = document.getElementById('libur-list');
+        const pagination = document.getElementById('pagination-controls');
+        listContainer.innerHTML = '';
+        pagination.innerHTML = '';
+  
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        const pageItems = liburData.slice(start, end);
+  
+        if (pageItems.length === 0) {
+          listContainer.innerHTML = `<li class="list-group-item text-muted">Tidak ada libur nasional.</li>`;
+          return;
+        }
+  
+        for (const item of pageItems) {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center';
+          li.innerHTML = `
+            ${item.summary}
+            <span class="badge badge-danger badge-pill">${formatDate(item.date)}</span>
+          `;
+          listContainer.appendChild(li);
+        }
+  
+        // Paginasi tombol
+        const totalPages = Math.ceil(liburData.length / perPage);
+        if (currentPage > 1) {
+          const prevBtn = document.createElement('button');
+          prevBtn.className = 'btn btn-sm btn-outline-primary';
+          prevBtn.innerHTML = '&laquo; Sebelumnya';
+          prevBtn.onclick = () => {
+            currentPage--;
+            renderLibur();
+          };
+          pagination.appendChild(prevBtn);
+        }
+  
+        if (currentPage < totalPages) {
+          const nextBtn = document.createElement('button');
+          nextBtn.className = 'btn btn-sm btn-outline-primary ml-auto';
+          nextBtn.innerHTML = 'Selanjutnya &raquo;';
+          nextBtn.onclick = () => {
+            currentPage++;
+            renderLibur();
+          };
+          pagination.appendChild(nextBtn);
+        }
+      }
+  
+      function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        const options = { day: '2-digit', month: 'short', year: 'numeric' };
+        return date.toLocaleDateString('id-ID', options);
+      }
+  
+      renderLibur();
+    });
   </script>
 {% endblock javascripts %}

@@ -69,7 +69,7 @@ def upload_absensi(request):
                 file_url=file_url
             )
 
-            messages.success(request, '✅ Data absensi berhasil diproses!')
+            messages.success(request, 'Data absensi berhasil diproses!')
             return redirect('upload_absensi')
         else:
             messages.error(request, '⚠ Terjadi kesalahan dalam mengupload file.')
@@ -104,7 +104,7 @@ def delete_absensi(request, id):
     """Menghapus satu data absensi berdasarkan ID"""
     absensi = get_object_or_404(Absensi, id_absensi=id)
     absensi.delete()
-    messages.success(request, "✅ Data absensi berhasil dihapus.")
+    messages.success(request, "Data absensi berhasil dihapus.")
     return redirect("upload_absensi")
 
 
@@ -125,7 +125,7 @@ def hapus_absensi_bulanan(request):
         deleted_count, _ = Absensi.objects.filter(bulan=int(bulan), tahun=int(tahun)).delete()
 
         if deleted_count > 0:
-            messages.success(request, f"✅ Berhasil menghapus {deleted_count} data absensi untuk bulan {bulan}-{tahun}.")
+            messages.success(request, f"Berhasil menghapus {deleted_count} data absensi untuk bulan {bulan}-{tahun}.")
         else:
             messages.warning(request, "⚠ Tidak ada data yang ditemukan untuk bulan ini.")
 

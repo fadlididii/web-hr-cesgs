@@ -1,0 +1,17 @@
+<script>
+  $(document).ready(function() {
+    // Refresh notifikasi setiap 60 detik
+    setInterval(function() {
+      $.ajax({
+        url: "{% url 'api_unread_count' %}", 
+        success: function(data) {
+          if (data.count > 0) {
+            $('.badge-danger').text(data.count).show();
+          } else {
+            $('.badge-danger').hide();
+          }
+        }
+      });
+    }, 60000);
+  });
+</script>

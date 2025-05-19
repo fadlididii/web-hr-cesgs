@@ -1,0 +1,140 @@
+<div class="table-responsive">
+  <table class="table table-bordered table-hover align-items-center">
+    <thead class="thead-light text-center">
+      <tr>
+        {% for col_key, col_label in available_columns %}
+          {% if col_key in selected_columns %}
+            <th>{{ col_label|upper }}</th>
+          {% endif %}
+        {% endfor %}
+        <th>AKSI</th>
+      </tr>
+    </thead>
+    <tbody class="text-center">
+      {% if karyawan %}
+        {% for k in karyawan %}
+          <tr>
+            {% for col_key, col_label in available_columns %}
+              {% if col_key in selected_columns %}
+                <td>
+                  {% if col_key == 'nama' %}
+                    {{ k.nama }}
+                  {% elif col_key == 'nama_catatan_kehadiran' %}
+                    {{ k.nama_catatan_kehadiran|default:"-" }}
+                  {% elif col_key == 'email' %}
+                    {{ k.user.email }}
+                  {% elif col_key == 'jabatan' %}
+                    {{ k.jabatan }}
+                  {% elif col_key == 'divisi' %}
+                    {{ k.divisi }}
+                  {% elif col_key == 'status' %}
+                    <span class="badge badge-info">{{ k.status }}</span>
+                  {% elif col_key == 'status_keaktifan' %}
+                    <span class="badge {% if k.status_keaktifan == 'Aktif' %}badge-success{% else %}badge-danger{% endif %}">
+                      {{ k.status_keaktifan }}
+                    </span>
+                  {% elif col_key == 'role' %}
+                    {{ k.user.get_role_display }}
+                  {% elif col_key == 'alamat' %}
+                    {{ k.alamat }}
+                  {% elif col_key == 'mulai_kontrak' %}
+                    {{ k.mulai_kontrak|date:"d M Y" }}
+                  {% elif col_key == 'batas_kontrak' %}
+                    {{ k.batas_kontrak|date:"d M Y" }}
+                  {% elif col_key == 'no_telepon' %}
+                    {{ k.no_telepon|default:"-" }}
+                  {% endif %}
+                </td>
+              {% endif %}
+            {% endfor %}
+            <td>
+              <div class="btn-group">
+                <a href="{% url 'edit_karyawan' k.id %}" class="btn btn-warning btn-sm">
+                  <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'hapus_karyawan' k.id %}" class="btn btn-danger btn-sm" 
+                   onclick="return confirm('Yakin ingin menghapus karyawan {{ k.nama }}?')">
+                  <i class="fas fa-trash"></i> Hapus
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="{{ selected_columns|length|add:1 }}" class="text-center text-muted">Belum ada data karyawan.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+  
+  <!-- Paginasi -->
+  {% if karyawan.paginator.num_pages > 1 %}
+  <div class="card-footer py-4">
+    <nav aria-label="Pagination">
+      <ul class="pagination justify-content-center mb-0">
+        {% if karyawan.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+              <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ karyawan.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="First">
+              <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+        {% endif %}
+        
+        {% for num in karyawan.paginator.page_range %}
+          {% if karyawan.number == num %}
+            <li class="page-item active">
+              <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+            </li>
+          {% elif num > karyawan.number|add:'-3' and num < karyawan.number|add:'3' %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        
+        {% if karyawan.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ karyawan.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ karyawan.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+              <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Last">
+              <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+

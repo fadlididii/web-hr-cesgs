@@ -48,6 +48,10 @@ def identify_time_rows(data):
 # ✅ 5️⃣ Proses Absensi dengan Fuzzy Matching ke `nama_catatan_kehadiran`
 from apps.hrd.models import Izin  # pastikan model Izin sudah diimpor
 
+# Tambahkan import untuk model Cuti
+from apps.hrd.models import Cuti
+from django.db.models import Q
+
 def process_absensi(file_path, bulan, tahun, selected_rule, file_name=None, file_url=None):
     try:
         data = pd.read_excel(file_path, sheet_name="Catatan Kehadiran Karyawan", dtype=str)
@@ -113,11 +117,21 @@ def process_absensi(file_path, bulan, tahun, selected_rule, file_name=None, file
                 jenis_izin__in=['wfh', 'telat'],
                 status='disetujui'
             ).exists()
+            
+            # 🔄 Cek apakah karyawan memiliki cuti di tanggal tsb
+            cuti_di_tanggal_ini = Cuti.objects.filter(
+                id_karyawan=karyawan,
+                tanggal_mulai__lte=tanggal_absensi,
+                tanggal_selesai__gte=tanggal_absensi,
+                status='disetujui'
+            ).exists()
 
             if is_libur:
                 status_absensi = "Libur"
+            elif cuti_di_tanggal_ini:
+                status_absensi = "Cuti"
             elif izin_di_tanggal_ini:
-                status_absensi = "Hadir"
+                status_absensi = "Tepat Waktu"
             elif jam_masuk:
                 if selected_rule:
                     jam_masuk_dt = datetime.combine(date.today(), jam_masuk)
@@ -125,9 +139,9 @@ def process_absensi(file_path, bulan, tahun, selected_rule, file_name=None, file
                     if (jam_masuk_dt - aturan_dt).total_seconds() / 60 > selected_rule.toleransi_telat:
                         status_absensi = "Terlambat"
                     else:
-                        status_absensi = "Hadir"
+                        status_absensi = "Tepat Waktu"
                 else:
-                    status_absensi = "Hadir"
+                    status_absensi = "Tepat Waktu"
             elif jam_keluar and not jam_masuk:
                 status_absensi = "Terlambat"
 
@@ -149,7 +163,7 @@ def process_absensi(file_path, bulan, tahun, selected_rule, file_name=None, file
             )
 
     check_and_mark_holiday(bulan, tahun)
-    logger.info(f"✅ Data absensi untuk bulan {bulan}-{tahun} berhasil diproses!")
+    logger.info(f"Data absensi untuk bulan {bulan}-{tahun} berhasil diproses!")
 
 
 # ✅ 6️⃣ Fungsi untuk Menandai Hari Libur Jika Semua Tidak Masuk

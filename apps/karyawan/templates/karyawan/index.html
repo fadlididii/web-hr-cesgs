@@ -1,414 +1,359 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} Dashboard {% endblock title %}
+{% block title %} Dashboard Karyawan {% endblock title %}
 
-<!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+{% endblock stylesheets %}
 
 {% block content %}
-
-    <!-- Header -->
-    <div class="header bg-primary pb-6">
-      <div class="container-fluid">
-        <div class="header-body">
-          <div class="row align-items-center py-4">
-            <div class="col-lg-6 col-7">
-              <h6 class="h2 text-white d-inline-block mb-0">Default</h6>
-              <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                  <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
-                  <li class="breadcrumb-item"><a href="#">Dashboards</a></li>
-                  <li class="breadcrumb-item active" aria-current="page">Default</li>
-                </ol>
-              </nav>
-            </div>
-            <div class="col-lg-6 col-5 text-right">
-              <a href="#" class="btn btn-sm btn-neutral">New</a>
-              <a href="#" class="btn btn-sm btn-neutral">Filters</a>
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">Dashboard Karyawan</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item"><a href="/karyawan/">Karyawan</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Sisa Cuti</h5>
+                  <span class="h2 font-weight-bold mb-0" data-id="sisa-cuti">{{ sisa_cuti }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                    <i class="ni ni-check-bold"></i>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <!-- Card stats -->
-          <div class="row">
-            <div class="col-xl-3 col-md-6">
-              <div class="card card-stats">
-                <!-- Card body -->
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Total traffic</h5>
-                      <span class="h2 font-weight-bold mb-0">350,897</span>
-                    </div>
-                    <div class="col-auto">
-                      <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
-                        <i class="ni ni-active-40"></i>
-                      </div>
-                    </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Pengajuan Cuti</h5>
+                  <span class="h2 font-weight-bold mb-0" data-id="pengajuan-cuti">{{ total_pengajuan_cuti }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                    <i class="ni ni-calendar-grid-58"></i>
                   </div>
-                  <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
-                  </p>
                 </div>
               </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-              <div class="card card-stats">
-                <!-- Card body -->
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">New users</h5>
-                      <span class="h2 font-weight-bold mb-0">2,356</span>
-                    </div>
-                    <div class="col-auto">
-                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
-                        <i class="ni ni-chart-pie-35"></i>
-                      </div>
-                    </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Pengajuan Izin</h5>
+                  <span class="h2 font-weight-bold mb-0" data-id="pengajuan-izin">{{ total_pengajuan_izin }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                    <i class="ni ni-time-alarm"></i>
                   </div>
-                  <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
-                  </p>
                 </div>
               </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-              <div class="card card-stats">
-                <!-- Card body -->
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Sales</h5>
-                      <span class="h2 font-weight-bold mb-0">924</span>
-                    </div>
-                    <div class="col-auto">
-                      <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
-                        <i class="ni ni-money-coins"></i>
-                      </div>
-                    </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Hari Kerja Bulan Ini</h5>
+                  <span class="h2 font-weight-bold mb-0">{{ hari_kerja }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
+                    <i class="ni ni-chart-bar-32"></i>
                   </div>
-                  <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
-                  </p>
                 </div>
               </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-              <div class="card card-stats">
-                <!-- Card body -->
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Performance</h5>
-                      <span class="h2 font-weight-bold mb-0">49,65%</span>
-                    </div>
-                    <div class="col-auto">
-                      <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
-                        <i class="ni ni-chart-bar-32"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                    <span class="text-nowrap">Since last month</span>
-                  </p>
-                </div>
-              </div>
+          </div>
+        </div>
+        <!-- Filter Bulan dan Tahun setelah header -->
+        <div class="container-fluid mt-3">
+          <div class="row mb-4">
+            <div class="col-md-12 d-flex align-items-center">
+              <label for="filter-bulan" class="mr-2 filter-label text-white font-weight-bold">Bulan:</label>
+              <select id="filter-bulan" class="form-control form-control-sm mr-3 bg-white text-dark" style="min-width: 120px;">
+                {% for num, nama in bulan_choices %}
+                <option value="{{ num }}" {% if selected_bulan == num|stringformat:"i" %}selected{% endif %}>{{ nama }}</option>
+                {% endfor %}
+              </select>
+
+              <label for="filter-tahun" class="mr-2 filter-label text-white font-weight-bold">Tahun:</label>
+              <select id="filter-tahun" class="form-control form-control-sm mr-3 bg-white text-dark" style="min-width: 100px;">
+                {% for th in tahun_choices %}
+                <option value="{{ th }}" {% if selected_tahun == th|stringformat:"i" %}selected{% endif %}>{{ th }}</option>
+                {% endfor %}
+              </select>
+
+              <button id="apply-filter" class="btn btn-sm btn-light text-primary font-weight-bold">Terapkan</button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Page content -->
-    <div class="container-fluid mt--6">
-      <div class="row">
-        <div class="col-xl-8">
-          <div class="card bg-default">
-            <div class="card-header bg-transparent">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h6 class="text-light text-uppercase ls-1 mb-1">Overview</h6>
-                  <h5 class="h3 text-white mb-0">Sales value</h5>
-                </div>
-                <div class="col">
-                  <ul class="nav nav-pills justify-content-end">
-                    <li class="nav-item mr-2 mr-md-0" data-toggle="chart" data-target="#chart-sales-dark" data-update='{"data":{"datasets":[{"data":[0, 20, 10, 30, 15, 40, 20, 60, 60]}]}}' data-prefix="$" data-suffix="k">
-                      <a href="#" class="nav-link py-2 px-3 active" data-toggle="tab">
-                        <span class="d-none d-md-block">Month</span>
-                        <span class="d-md-none">M</span>
-                      </a>
-                    </li>
-                    <li class="nav-item" data-toggle="chart" data-target="#chart-sales-dark" data-update='{"data":{"datasets":[{"data":[0, 20, 5, 25, 10, 30, 15, 40, 40]}]}}' data-prefix="$" data-suffix="k">
-                      <a href="#" class="nav-link py-2 px-3" data-toggle="tab">
-                        <span class="d-none d-md-block">Week</span>
-                        <span class="d-md-none">W</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Chart -->
-              <div class="chart">
-                <!-- Chart wrapper -->
-                <canvas id="chart-sales-dark" class="chart-canvas"></canvas>
-              </div>
-            </div>
-          </div>
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h5 class="h3 mb-0" id="judul-terlambat">Top 5 Terlambat</h5>
         </div>
-        <div class="col-xl-4">
-          <div class="card">
-            <div class="card-header bg-transparent">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6>
-                  <h5 class="h3 mb-0">Total orders</h5>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Chart -->
-              <div class="chart">
-                <canvas id="chart-bars" class="chart-canvas"></canvas>
-              </div>
-            </div>
-          </div>
+        <div class="card-body" style="height: 400px;">
+          <canvas id="chart-late-employees"></canvas>
         </div>
       </div>
-      <div class="row">
-        <div class="col-xl-8">
-          <div class="card">
-            <div class="card-header border-0">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h3 class="mb-0">Page visits</h3>
-                </div>
-                <div class="col text-right">
-                  <a href="#!" class="btn btn-sm btn-primary">See all</a>
-                </div>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <!-- Projects table -->
-              <table class="table align-items-center table-flush">
-                <thead class="thead-light">
-                  <tr>
-                    <th scope="col">Page name</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col">Unique users</th>
-                    <th scope="col">Bounce rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      /argon/
-                    </th>
-                    <td>
-                      4,569
-                    </td>
-                    <td>
-                      340
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-up text-success mr-3"></i> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/index.html
-                    </th>
-                    <td>
-                      3,985
-                    </td>
-                    <td>
-                      319
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-down text-warning mr-3"></i> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/charts.html
-                    </th>
-                    <td>
-                      3,513
-                    </td>
-                    <td>
-                      294
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-down text-warning mr-3"></i> 36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/tables.html
-                    </th>
-                    <td>
-                      2,050
-                    </td>
-                    <td>
-                      147
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-up text-success mr-3"></i> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      /argon/profile.html
-                    </th>
-                    <td>
-                      1,795
-                    </td>
-                    <td>
-                      190
-                    </td>
-                    <td>
-                      <i class="fas fa-arrow-down text-danger mr-3"></i> 46,53%
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-4">
-          <div class="card">
-            <div class="card-header border-0">
-              <div class="row align-items-center">
-                <div class="col">
-                  <h3 class="mb-0">Social traffic</h3>
-                </div>
-                <div class="col text-right">
-                  <a href="#!" class="btn btn-sm btn-primary">See all</a>
-                </div>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <!-- Projects table -->
-              <table class="table align-items-center table-flush">
-                <thead class="thead-light">
-                  <tr>
-                    <th scope="col">Referral</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      Facebook
-                    </th>
-                    <td>
-                      1,480
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">60%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-danger" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      Facebook
-                    </th>
-                    <td>
-                      5,480
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">70%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      Google
-                    </th>
-                    <td>
-                      4,807
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">80%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-primary" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      Instagram
-                    </th>
-                    <td>
-                      3,678
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">75%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      twitter
-                    </th>
-                    <td>
-                      2,645
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <span class="mr-2">30%</span>
-                        <div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-warning" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%;"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {% include "includes/footer.html" %}
-
     </div>
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h5 class="h3 mb-0" id="judul-tepat-waktu">Top 5 Tepat Waktu</h5>
+        </div>
+        <div class="card-body" style="height: 400px;">
+          <canvas id="chart-ontime-employees"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <div class="row">
+    <div class="col-xl-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="h3 mb-0">Kalender CESGS</h5>
+        </div>
+        <div class="card-body">
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="h3 mb-0">Libur Nasional Terdekat</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% for libur in libur_terdekat %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ libur.summary }}
+              <span class="badge badge-danger badge-pill">{{ libur.date|date:"d M Y" }}</span>
+            </li>
+            {% empty %}
+            <li class="list-group-item text-muted">Tidak ada libur terdekat.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "includes/footer.html" %}
 {% endblock content %}
 
-<!-- Specific JS goes HERE --> 
 {% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+  function updateChart(chartId, labels, data, labelText) {
+    const ctx = document.getElementById(chartId);
+    
+    // Hapus chart lama jika sudah ada
+    if (window.chartInstances && window.chartInstances[chartId]) {
+      window.chartInstances[chartId].destroy();
+    }
+    
+    // Tentukan warna berdasarkan jenis chart
+    let backgroundColor, borderColor;
+    if (chartId === 'chart-late-employees') {
+      backgroundColor = 'rgba(231, 76, 60, 0.5)';  // Merah untuk terlambat
+      borderColor = 'rgba(231, 76, 60, 1)';
+    } else {
+      backgroundColor = 'rgba(54, 162, 235, 0.5)';  // Biru untuk tepat waktu
+      borderColor = 'rgba(54, 162, 235, 1)';
+    }
+    
+    // Buat chart baru
+    const newChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: labelText,
+          data: data,
+          backgroundColor: backgroundColor,
+          borderColor: borderColor,
+          borderWidth: 1
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        scales: { 
+          y: { 
+            beginAtZero: true 
+          } 
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                size: 14
+              }
+            }
+          },
+          title: {
+            display: false
+          }
+        }
+      }
+    });
+    
+    // Simpan instance chart
+    if (!window.chartInstances) window.chartInstances = {};
+    window.chartInstances[chartId] = newChart;
+  }
 
-  <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
-  <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
-
+  document.addEventListener('DOMContentLoaded', function () {
+    // Inisialisasi data awal
+    const bulan = document.getElementById('filter-bulan').value;
+    const tahun = document.getElementById('filter-tahun').value;
+    
+    // Inisialisasi kalender
+    initializeCalendar("/karyawan/kalender/events/?bulan=" + bulan + "&tahun=" + tahun);
+    
+    // Load data dashboard awal
+    loadDashboardData(bulan, tahun);
+    
+    // Tambahkan event listener untuk tombol filter
+    document.getElementById('apply-filter').addEventListener('click', function(e) {
+      e.preventDefault(); // Mencegah refresh halaman
+      
+      const bulan = document.getElementById('filter-bulan').value;
+      const tahun = document.getElementById('filter-tahun').value;
+      
+      // Perbarui kalender dengan parameter filter baru
+      initializeCalendar("/karyawan/kalender/events/?bulan=" + bulan + "&tahun=" + tahun);
+      
+      // Perbarui data dashboard
+      loadDashboardData(bulan, tahun);
+    });
+  });
+  
+  // Function to initialize the calendar
+  function initializeCalendar(eventsUrl) {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
+    
+    // Clear any existing calendar instance
+    if (window.calendarInstance) {
+      window.calendarInstance.destroy();
+    }
+    
+    // Create new calendar instance
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      height: 600,
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,listMonth'
+      },
+      events: eventsUrl,
+      eventDidMount: function (info) {
+        // Gunakan tooltip untuk menampilkan daftar nama (description)
+        if (info.event.extendedProps.description) {
+          try {
+            const tooltip = new bootstrap.Tooltip(info.el, {
+              title: info.event.extendedProps.description || info.event.title,
+              placement: "top",
+              trigger: "hover",
+              container: "body"
+            });
+          } catch (error) {
+            console.warn('Tooltip tidak dapat diinisialisasi:', error);
+          }
+        }
+      },
+      locale: 'id',
+      firstDay: 1, // Monday as first day
+      dayMaxEvents: true, // allow "more" link when too many events
+    });
+    
+    calendar.render();
+    window.calendarInstance = calendar;
+  }
+  
+  // Fungsi untuk memuat data dashboard
+  function loadDashboardData(bulan, tahun) {
+    fetch(`/karyawan/data-dashboard/?bulan=${bulan}&tahun=${tahun}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then(data => {
+        updateChart('chart-late-employees', data.top_terlambat_labels, data.top_terlambat_data, 'Jumlah Terlambat');
+        updateChart('chart-ontime-employees', data.top_tepat_labels, data.top_tepat_data, 'Jumlah Tepat Waktu');
+        
+        // Update informasi lainnya
+        if (document.querySelector('[data-id="sisa-cuti"]')) {
+          document.querySelector('[data-id="sisa-cuti"]').textContent = data.sisa_cuti;
+        }
+        if (data.total_pengajuan_cuti) {
+          document.querySelector('[data-id="pengajuan-cuti"]').textContent = data.total_pengajuan_cuti;
+        }
+        if (data.total_pengajuan_izin) {
+          document.querySelector('[data-id="pengajuan-izin"]').textContent = data.total_pengajuan_izin;
+        }
+        
+        // Update judul grafik dengan bulan dan tahun yang dipilih
+        updateChartTitles(bulan, tahun);
+      })
+      .catch(error => {
+        console.error('Error fetching dashboard data:', error);
+      });
+  }
+  
+  // Fungsi untuk memperbarui judul grafik
+  function updateChartTitles(bulan, tahun) {
+    // Dapatkan nama bulan dari dropdown
+    const bulanElement = document.getElementById('filter-bulan');
+    const namaBulan = bulanElement.options[bulanElement.selectedIndex].text;
+    
+    // Perbarui judul grafik
+    document.getElementById('judul-terlambat').textContent = `Top 5 Terlambat ${namaBulan} ${tahun}`;
+    document.getElementById('judul-tepat-waktu').textContent = `Top 5 Tepat Waktu ${namaBulan} ${tahun}`;
+  }
+</script>
 {% endblock javascripts %}

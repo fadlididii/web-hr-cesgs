@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpResponse
-from apps.hrd.models import Cuti, TidakAmbilCuti, JatahCuti
-from apps.authentication.models import User
-from django.db.models import Q
+from apps.hrd.models import Cuti, TidakAmbilCuti
+from apps.hrd.utils.jatah_cuti import isi_cuti_tahunan, kembalikan_jatah_tidak_ambil_cuti, rapikan_cuti_tahunan
+from notifications.signals import notify
 import openpyxl
 
 @login_required
@@ -13,14 +14,13 @@ def approval_cuti_view(request):
         messages.error(request, "Anda tidak memiliki akses ke halaman ini.")
         return redirect('karyawan_dashboard')
 
-    daftar_cuti = Cuti.objects.filter(status='menunggu').order_by('-tanggal_pengajuan')
+    daftar_cuti = Cuti.objects.filter(status='menunggu').order_by('-created_at')
     daftar_tidak_ambil = TidakAmbilCuti.objects.filter(status='menunggu').order_by('-tanggal_pengajuan')
-    riwayat_cuti = Cuti.objects.exclude(status='menunggu').order_by('-tanggal_pengajuan')
 
     if request.method == 'POST':
         jenis = request.POST.get('jenis')
         aksi = request.POST.get('aksi')
-        alasan_ditolak = request.POST.get('alasan_ditolak', '')
+        alasan_ditolak = request.POST.get('alasan_ditolak', '').strip()
 
         if jenis == 'cuti':
             cuti_id = request.POST.get('cuti_id')
@@ -30,8 +30,18 @@ def approval_cuti_view(request):
                 cuti.status = aksi
                 cuti.approval = request.user
 
+                # Kirim notifikasi ke karyawan
+                notify.send(
+                    sender=request.user,
+                    recipient=cuti.id_karyawan.user,
+                    verb=f"cuti {aksi}",
+                    description=f"Pengajuan cuti Anda untuk tanggal {cuti.tanggal_mulai} sampai {cuti.tanggal_selesai} telah {aksi}",
+                    target=cuti,
+                    data={"url": "/karyawan/pengajuan-cuti/"}
+                )
+
                 if aksi == 'ditolak':
-                    cuti.alasan_ditolak = alasan_ditolak
+                    cuti.feedback_hr = alasan_ditolak or "Tidak ada alasan diberikan."
 
                 file_persetujuan = request.FILES.get('file_persetujuan')
                 if file_persetujuan:
@@ -42,12 +52,7 @@ def approval_cuti_view(request):
                     jumlah_hari = (cuti.tanggal_selesai - cuti.tanggal_mulai).days + 1
 
                     if cuti.id_karyawan.user.role in ['HRD', 'Karyawan Tetap']:
-                        jatah, _ = JatahCuti.objects.get_or_create(
-                            karyawan=cuti.id_karyawan, tahun=tahun,
-                            defaults={'total_cuti': 12, 'sisa_cuti': 12}
-                        )
-                        jatah.sisa_cuti -= jumlah_hari
-                        jatah.save()
+                        isi_cuti_tahunan(cuti.id_karyawan, cuti.tanggal_mulai, cuti.tanggal_selesai)
 
                 cuti.save()
                 messages.success(request, f"Pengajuan cuti berhasil {aksi}.")
@@ -59,28 +64,28 @@ def approval_cuti_view(request):
             if aksi in ['disetujui', 'ditolak']:
                 data.status = aksi
                 data.approval = request.user
+                
+                # kirim notifikasi ke karyawan
+                notify.send(
+                    sender=request.user,
+                    recipient=data.id_karyawan.user,
+                    verb=f"tidak ambil cuti {aksi}",
+                    description=f"Pengajuan tidak ambil cuti Anda untuk tanggal {data.tanggal_pengajuan} telah {aksi}",
+                    target=data,
+                    data={"url": "/karyawan/pengajuan-tidak-ambil-cuti/"}
+                )
 
                 if aksi == 'ditolak':
-                    data.alasan_ditolak = alasan_ditolak
+                    data.feedback_hr = alasan_ditolak or "Tidak ada alasan diberikan."
 
                 file_persetujuan = request.FILES.get('file_persetujuan')
                 if file_persetujuan:
                     data.file_persetujuan = file_persetujuan
 
-                if aksi == 'disetujui':
+                if aksi == 'disetujui' and data.id_karyawan.user.role in ['HRD', 'Karyawan Tetap']:
                     daftar_tanggal = data.tanggal.all()
-                    jumlah_tanggal = daftar_tanggal.count()
-
-                    if jumlah_tanggal > 0:
-                        tahun = daftar_tanggal.first().tanggal.year
-
-                        if data.id_karyawan.user.role in ['HRD', 'Karyawan Tetap']:
-                            jatah, _ = JatahCuti.objects.get_or_create(
-                                karyawan=data.id_karyawan, tahun=tahun,
-                                defaults={'total_cuti': 12, 'sisa_cuti': 12}
-                            )
-                            jatah.sisa_cuti += jumlah_tanggal
-                            jatah.save()
+                    kembalikan_jatah_tidak_ambil_cuti(data.id_karyawan, daftar_tanggal)
+                    rapikan_cuti_tahunan(data.id_karyawan, tahun=daftar_tanggal.first().tanggal.year)
 
                 data.save()
                 messages.success(request, f"Pengajuan tidak ambil cuti berhasil {aksi}.")
@@ -88,16 +93,21 @@ def approval_cuti_view(request):
         return redirect('approval_cuti')
 
     # Filter riwayat
-    riwayat_cuti = Cuti.objects.exclude(status='menunggu')
+    riwayat_cuti_list = Cuti.objects.exclude(status='menunggu')
     keyword = request.GET.get('nama')
     tahun = request.GET.get('tahun')
 
     if keyword:
-        riwayat_cuti = riwayat_cuti.filter(id_karyawan__nama__icontains=keyword)
+        riwayat_cuti_list = riwayat_cuti_list.filter(id_karyawan__nama__icontains=keyword)
     if tahun:
-        riwayat_cuti = riwayat_cuti.filter(tanggal_mulai__year=tahun)
+        riwayat_cuti_list = riwayat_cuti_list.filter(tanggal_mulai__year=tahun)
 
-    riwayat_cuti = riwayat_cuti.order_by('-tanggal_pengajuan')
+    riwayat_cuti_list = riwayat_cuti_list.order_by('-created_at')
+    
+    # Implementasi paginasi
+    paginator = Paginator(riwayat_cuti_list, 10)  # 10 item per halaman
+    page_number = request.GET.get('page')
+    riwayat_cuti = paginator.get_page(page_number)
 
     return render(request, 'hrd/approval_cuti.html', {
         'daftar_cuti': daftar_cuti,
@@ -105,13 +115,12 @@ def approval_cuti_view(request):
         'riwayat_cuti': riwayat_cuti,
     })
 
-
 @login_required
 def export_riwayat_cuti_excel(request):
     if request.user.role != 'HRD':
         return HttpResponse("Forbidden", status=403)
 
-    riwayat = Cuti.objects.exclude(status='menunggu').order_by('-tanggal_pengajuan')
+    riwayat = Cuti.objects.exclude(status='menunggu').order_by('-created_at')
 
     keyword = request.GET.get('nama')
     tahun = request.GET.get('tahun')

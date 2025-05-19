@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from apps.authentication.decorators import role_required
 from django.contrib import messages
@@ -11,6 +12,11 @@ from ..models import Rules
 def list_rules(request):
     """Menampilkan daftar semua aturan absensi."""
     rules = Rules.objects.all()
+    
+    paginator = Paginator(rules, 10)  # Show 10 rules per page
+    page_number = request.GET.get('page')
+    rules = paginator.get_page(page_number)  # Get the current page's rules
+    
     return render(request, 'absensi/rules/list.html', {'rules': rules})
 
 # ✅ 2️⃣ Menambahkan aturan absensi baru

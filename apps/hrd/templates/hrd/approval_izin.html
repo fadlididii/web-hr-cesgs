@@ -48,14 +48,38 @@
                   {% csrf_token %}
                   <input type="hidden" name="izin_id" value="{{ izin.id }}">
                   <button type="submit" name="aksi" value="disetujui" class="btn btn-success btn-sm">Setujui</button>
-                  <button type="submit" name="aksi" value="ditolak" class="btn btn-danger btn-sm">Tolak</button>
+                  <button type="button" class="btn btn-danger btn-sm"
+                    onclick="openFeedbackModal('{{ izin.id }}')">Tolak</button>
                 </form>
               </td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
-      </div>
+        {% include 'includes/pagination.html' with page_obj=daftar_izin %}
+        <!-- MODAL FEEDBACK -->
+        <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <form method="post" enctype="multipart/form-data" id="modal-feedback-form">
+                {% csrf_token %}
+                <div class="modal-header">
+                  <h5 class="modal-title">Alasan Penolakan Izin</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden" name="izin_id" id="modal-izin-id">
+                  <textarea name="feedback_hr" class="form-control" placeholder="Berikan alasan penolakan..." rows="3" required></textarea>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" name="aksi" value="ditolak" class="btn btn-danger">Kirim</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       {% else %}
         <p class="text-muted">Tidak ada pengajuan izin menunggu.</p>
       {% endif %}
@@ -64,7 +88,7 @@
   <!-- Riwayat Izin Seluruh Karyawan -->
 <div class="card mt-4">
     <div class="card-header">
-      <h5 class="mb-0">Riwayat Izin Seluruh Karyawan</h5>
+      <h4 class="mb-0">Riwayat Izin Seluruh Karyawan</h4>
     </div>
     <div class="card-body table-responsive">
       <!-- Filter & Export -->
@@ -124,6 +148,7 @@
           {% endfor %}
         </tbody>
       </table>
+      {% include 'includes/pagination.html' with page_obj=riwayat_izin %}
     </div>
   </div>
   
@@ -131,4 +156,11 @@
 </div>
 {% endblock content %}
 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+<script>
+  function openFeedbackModal(izinId) {
+    $('#modal-izin-id').val(izinId);
+    $('#feedbackModal').modal('show');
+  }
+</script>
+{% endblock javascripts %}

@@ -1,11 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.utils import timezone
 from apps.hrd.models import TidakAmbilCuti, Karyawan, CutiBersama
 from apps.karyawan.forms import TidakAmbilCutiForm
 from datetime import datetime
 from django.db.models import Q
+from notifications.signals import notify
+from apps.authentication.models import User
 
 @login_required
 def tidak_ambil_cuti_view(request):
@@ -22,7 +25,12 @@ def tidak_ambil_cuti_view(request):
 
     # Filter daftar tanggal cuti bersama yang belum diajukan
     sisa_tanggal = semua_cuti_bersama.exclude(id__in=pengajuan_disetujui)
-
+    
+    # paginasi tabel pengajuan
+    paginator = Paginator(sisa_tanggal, 10)  # 10 items per page
+    page_number = request.GET.get('page')
+    riwayat = paginator.get_page(page_number) 
+    
     # Form khusus untuk pilihan tanggal
     if request.method == 'POST':
         form = TidakAmbilCutiForm(request.POST, request.FILES)
@@ -32,6 +40,18 @@ def tidak_ambil_cuti_view(request):
             tidak_ambil.id_karyawan = karyawan
             tidak_ambil.save()
             form.save_m2m()
+            
+            # Kirim notifikasi ke HRD
+            hr_users = User.objects.filter(role='HRD')
+            notify.send(
+                sender=request.user,
+                recipient=hr_users,
+                verb="mengajukan tidak ambil cuti",
+                description=f"{karyawan.nama} mengajukan tidak ambil cuti bersama",
+                target=tidak_ambil,
+                data={"url": "/hrd/approval-cuti/"}
+            )
+            
             messages.success(request, "Pengajuan berhasil dikirim.")
             return redirect('tidak_ambil_cuti')
     else:
