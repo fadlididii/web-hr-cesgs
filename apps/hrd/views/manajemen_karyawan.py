@@ -7,7 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from ..models import Karyawan
 from ..forms import KaryawanForm
 from apps.authentication.models import User
-from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
+# from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
 import pandas as pd
 
 @login_required
@@ -30,7 +30,7 @@ def list_karyawan(request):
     if selected_status:
         filters &= Q(status=selected_status)
     if selected_divisi:
-        filters &= Q(divisi__icontains=selected_divisi)
+        filters &= Q(divisi=selected_divisi)
 
     karyawan_list = Karyawan.objects.select_related('user').filter(filters)
 
@@ -46,8 +46,10 @@ def list_karyawan(request):
         ('nama', 'Nama'),
         ('nama_catatan_kehadiran', 'Nama Sesuai Catatan Kehadiran'),
         ('email', 'Email'),
+        ('jenis_kelamin', 'Jenis Kelamin'),
         ('jabatan', 'Jabatan'),
         ('divisi', 'Divisi'),
+        ('tanggal_lahir', 'Tanggal Lahir'),
         ('status', 'Status Perkawinan'),
         ('status_keaktifan', 'Status Keaktifan'),
         ('role', 'Role'),
@@ -69,7 +71,7 @@ def list_karyawan(request):
 
     request.session['selected_columns'] = selected_columns
 
-    paginator = Paginator(karyawan_list, 5)
+    paginator = Paginator(karyawan_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -78,6 +80,7 @@ def list_karyawan(request):
         'roles': User.ROLE_CHOICES,
         'status_list': Karyawan.STATUS_CHOICES,
         'status_keaktifan_list': [('Aktif', 'Aktif'), ('Tidak Aktif', 'Tidak Aktif')],
+        'divisi_list': Karyawan.DIVISI_CHOICES,
         'selected_nama': selected_nama,
         'selected_role': selected_role,
         'status_keaktifan': status_keaktifan,
@@ -107,9 +110,17 @@ def tambah_karyawan(request):
                 messages.error(request, 'Email sudah terdaftar.')
                 return redirect('tambah_karyawan')
 
-            user = User.objects.create_user(email=email, password='CESGS123', role=role)
-
+            # Simpan karyawan terlebih dahulu untuk mendapatkan data nama dan tanggal lahir
             karyawan = form.save(commit=False)
+            
+            # Buat user dengan data dari form karyawan
+            user = User.objects.create_user(
+                email=email,
+                role=role,
+                nama=karyawan.nama,
+                tanggal_lahir=karyawan.tanggal_lahir
+            )
+
             karyawan.user = user
             karyawan.save()
             hitung_jatah_cuti(karyawan)
@@ -158,10 +169,15 @@ def hapus_karyawan(request, id):
 @login_required
 def download_karyawan_excel(request):
     data = Karyawan.objects.all().values(
-        'nama', 'jabatan', 'divisi', 'status', 'status_keaktifan',
+        'nama', 'jenis_kelamin', 'jabatan', 'divisi', 'status', 'status_keaktifan',
         'mulai_kontrak', 'batas_kontrak', 'no_telepon'
     )
     df = pd.DataFrame.from_records(data)
+    
+    # Konversi kode jenis kelamin ke label yang lebih jelas
+    jenis_kelamin_map = dict(Karyawan.JENIS_KELAMIN_CHOICES)
+    df['jenis_kelamin'] = df['jenis_kelamin'].map(jenis_kelamin_map)
+    
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="data_karyawan.xlsx"'
     with pd.ExcelWriter(response, engine='openpyxl') as writer:

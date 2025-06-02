@@ -25,21 +25,23 @@ class Absensi(models.Model):
     tahun = models.IntegerField()
     
     status_absensi = models.CharField(
-        max_length=20, 
+        max_length=25, 
         choices=[
             ('Tepat Waktu', 'Tepat Waktu'),
             ('Terlambat', 'Terlambat'),
             ('Izin', 'Izin'),
             ('Sakit', 'Sakit'),
             ('Cuti', 'Cuti'),
-            ('Libur', 'Libur')
+            ('Libur', 'Libur'),
+            ('Research and Innovation', 'Research and Innovation'),
+            ('CPEBR', 'CPEBR')
         ]
     )
     jam_masuk = models.TimeField(null=True, blank=True)
     jam_keluar = models.TimeField(null=True, blank=True)
     is_libur = models.BooleanField(default=False)
 
-    # ✅ Kolom tambahan untuk menyimpan informasi file upload
+    #  Kolom tambahan untuk menyimpan informasi file upload
     nama_file = models.CharField(max_length=255, null=True, blank=True)  # Nama file yang diunggah
     file_url = models.CharField(max_length=500, null=True, blank=True)  # URL file di media storage
     created_at = models.DateTimeField(auto_now_add=True)  # Waktu upload pertama kali

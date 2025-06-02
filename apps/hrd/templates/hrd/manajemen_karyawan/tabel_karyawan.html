@@ -23,6 +23,14 @@
                     {{ k.nama_catatan_kehadiran|default:"-" }}
                   {% elif col_key == 'email' %}
                     {{ k.user.email }}
+                  {% elif col_key == 'jenis_kelamin' %}
+                    {% if k.jenis_kelamin == 'L' %}
+                      <span class="badge badge-primary">Laki-laki</span>
+                    {% elif k.jenis_kelamin == 'P' %}
+                      <span class="badge badge-info">Perempuan</span>
+                    {% else %}
+                      <span class="badge badge-secondary">-</span>
+                    {% endif %}
                   {% elif col_key == 'jabatan' %}
                     {{ k.jabatan }}
                   {% elif col_key == 'divisi' %}
@@ -43,17 +51,21 @@
                     {{ k.batas_kontrak|date:"d M Y" }}
                   {% elif col_key == 'no_telepon' %}
                     {{ k.no_telepon|default:"-" }}
+                  {% elif col_key == 'tanggal_lahir' %}
+                    {{ k.tanggal_lahir|date:'d M Y' }}
                   {% endif %}
                 </td>
               {% endif %}
             {% endfor %}
             <td>
               <div class="btn-group">
-                <a href="{% url 'edit_karyawan' k.id %}" class="btn btn-warning btn-sm">
+                <a href="{% url 'edit_karyawan' k.id %}" class="btn btn-warning btn-sm" title="Edit">
                   <i class="fas fa-edit"></i> Edit
                 </a>
-                <a href="{% url 'hapus_karyawan' k.id %}" class="btn btn-danger btn-sm" 
-                   onclick="return confirm('Yakin ingin menghapus karyawan {{ k.nama }}?')">
+                <a href="{% url 'hapus_karyawan' k.id %}" 
+                   class="btn btn-danger btn-sm" 
+                   onclick="return confirm('Apakah Anda yakin ingin menghapus karyawan:\n\nNama: {{ k.nama }}\nJabatan: {{ k.jabatan }}\nDivisi: {{ k.divisi }}\n\nTindakan ini tidak dapat dibatalkan.')"
+                   title="Hapus">
                   <i class="fas fa-trash"></i> Hapus
                 </a>
               </div>
@@ -62,13 +74,14 @@
         {% endfor %}
       {% else %}
         <tr>
-          <td colspan="{{ selected_columns|length|add:1 }}" class="text-center text-muted">Belum ada data karyawan.</td>
+          <td colspan="{{ selected_columns|length|add:1 }}" class="text-center text-muted">
+            <i class="fas fa-info-circle"></i> Belum ada data karyawan.
+          </td>
         </tr>
       {% endif %}
     </tbody>
   </table>
   
-  <!-- Paginasi -->
   {% if karyawan.paginator.num_pages > 1 %}
   <div class="card-footer py-4">
     <nav aria-label="Pagination">

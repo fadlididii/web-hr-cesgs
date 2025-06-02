@@ -42,7 +42,7 @@
                   <div class="row">
                     <div class="col">
                       <h5 class="card-title text-uppercase text-muted mb-0">Total Karyawan</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ total_karyawan_tetap }}</span>
+                      <span class="h2 font-weight-bold mb-0 counter">{{ total_karyawan_tetap }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
@@ -64,10 +64,10 @@
                   <div class="row">
                     <div class="col">
                       <h5 class="card-title text-uppercase text-muted mb-0">Total Cuti</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ total_cuti }}</span>
+                      <span class="h2 font-weight-bold mb-0 counter">{{ total_cuti }}</span>
                     </div>
                     <div class="col-auto">
-                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow pulse">
                         <i class="ni ni-calendar-grid-58"></i>
                       </div>
                     </div>
@@ -229,7 +229,7 @@
         <div class="col-xl-4">
           <div class="card">
             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-              <h3 class="mb-0">Pengajuan belum diproses</h3>
+              <h3 class="mb-0">Pengajuan Belum Diproses</h3>
             </div>
             <div class="card-body">
               <ul class="list-group list-group-flush">
@@ -252,19 +252,14 @@
         <div class="col-xl-4">
           <div class="card">
             <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-              <h3 class="mb-0">Jumlah Karyawan per Divisi</h3>
+              <h3 class="mb-0">Jumlah Karyawan Tiap Divisi</h3>
             </div>
             <div class="card-body">
-              <ul class="list-group list-group-flush">
-                {% for divisi, jumlah in jumlah_per_divisi.items %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  {{ divisi }}
-                  <span class="badge badge-success badge-pill">{{ jumlah }}</span>
-                </li>
-                {% empty %}
-                <li class="list-group-item text-muted">Tidak ada data divisi.</li>
-                {% endfor %}
-              </ul>
+              <!-- Tempat render data via JS -->
+              <ul class="list-group list-group-flush" id="divisi-list"></ul>
+        
+              <!-- Tombol paginasi -->
+              <div class="mt-3 d-flex justify-content-between" id="pagination-divisi-controls"></div>
             </div>
           </div>
         </div>
@@ -662,4 +657,92 @@
       renderLibur();
     });
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const divisiData = {{ jumlah_divisi_json|safe }};
+      const perPageDivisi = 3;
+      let currentPageDivisi = 1;
+  
+      function renderDivisi() {
+        const list = document.getElementById('divisi-list');
+        const pagination = document.getElementById('pagination-divisi-controls');
+        list.innerHTML = '';
+        pagination.innerHTML = '';
+  
+        const start = (currentPageDivisi - 1) * perPageDivisi;
+        const end = start + perPageDivisi;
+        const pageItems = divisiData.slice(start, end);
+  
+        if (pageItems.length === 0) {
+          list.innerHTML = `<li class="list-group-item text-muted">Tidak ada data divisi.</li>`;
+          return;
+        }
+  
+        for (const item of pageItems) {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center';
+          const tooltipText = item.karyawan.join('\n');
+          li.innerHTML = `
+            <span class="text-primary" data-toggle="tooltip" data-html="true" title="${tooltipText.replace(/"/g, '&quot;')}">${item.divisi}</span>
+            <span class="badge badge-success badge-pill">${item.jumlah}</span>
+          `;
+          list.appendChild(li);
+        }
+  
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip({
+          placement: 'right',
+          template: '<div class="tooltip" role="tooltip"><div class="tooltip-inner text-left" style="white-space: pre-line;"></div></div>'
+        });
+  
+        // Pagination code remains the same
+        const totalPages = Math.ceil(divisiData.length / perPageDivisi);
+        if (currentPageDivisi > 1) {
+          const prevBtn = document.createElement('button');
+          prevBtn.className = 'btn btn-sm btn-outline-primary';
+          prevBtn.innerHTML = '&laquo; Sebelumnya';
+          prevBtn.onclick = () => {
+            currentPageDivisi--;
+            renderDivisi();
+          };
+          pagination.appendChild(prevBtn);
+        }
+  
+        if (currentPageDivisi < totalPages) {
+          const nextBtn = document.createElement('button');
+          nextBtn.className = 'btn btn-sm btn-outline-primary ml-auto';
+          nextBtn.innerHTML = 'Selanjutnya &raquo;';
+          nextBtn.onclick = () => {
+            currentPageDivisi++;
+            renderDivisi();
+          };
+          pagination.appendChild(nextBtn);
+        }
+      }
+  
+      renderDivisi();
+    });
+  </script>  
 {% endblock javascripts %}
+
+<style>
+.counter {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+</style>

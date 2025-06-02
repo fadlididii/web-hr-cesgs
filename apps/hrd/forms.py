@@ -12,7 +12,7 @@ class KaryawanForm(forms.ModelForm):
 
     class Meta:
         model = Karyawan
-        fields = ['nama', 'nama_catatan_kehadiran', 'jabatan', 'divisi', 'alamat', 'status', 'mulai_kontrak', 'batas_kontrak', 'status_keaktifan', 'no_telepon']
+        fields = ['nama', 'nama_catatan_kehadiran', 'jenis_kelamin', 'jabatan', 'divisi', 'alamat', 'status', 'mulai_kontrak', 'batas_kontrak', 'status_keaktifan', 'no_telepon', 'tanggal_lahir']
 
         widgets = {
             'nama': forms.TextInput(attrs={
@@ -24,6 +24,7 @@ class KaryawanForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Masukkan nama yang sesuai di catatan kehadiran'
             }),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
             'jabatan': forms.TextInput(attrs={'class': 'form-control'}),
             'divisi': forms.TextInput(attrs={'class': 'form-control'}),
             'alamat': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -36,6 +37,7 @@ class KaryawanForm(forms.ModelForm):
                 'pattern': r'^(\+62|0)[0-9]{9,13}$',
                 'title': 'Masukkan nomor telepon yang valid, contoh: +6281234567890 atau 081234567890'
             }),
+            'tanggal_lahir': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
     
     def clean_nama(self):
@@ -47,34 +49,7 @@ class KaryawanForm(forms.ModelForm):
         nama_bersih = ' '.join(word.capitalize() for word in nama.split())
         return nama_bersih
 
-class CutiForm(forms.ModelForm):
-    class Meta:
-        model = Cuti
-        fields = ['jenis_cuti', 'tanggal_mulai', 'tanggal_selesai', 'file_pengajuan', 'file_dokumen_formal']
-        widgets = {
-            'jenis_cuti': forms.Select(attrs={'class': 'form-control'}),
-            'tanggal_mulai': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'tanggal_selesai': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'file_pengajuan': forms.ClearableFileInput(attrs={'class': 'form-control'}), 
-            'file_dokumen_formal': forms.ClearableFileInput(attrs={'class': 'form-control'}), 
-        }
-        
-    def __init__(self, *args, **kwargs):
-        super(CutiForm, self).__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.required = True
 
-class IzinForm(forms.ModelForm):
-    class Meta:
-        model = Izin
-        fields = ['jenis_izin', 'tanggal_izin', 'alasan', 'file_pengajuan']
-        widgets = {
-            'jenis_izin': forms.Select(attrs={'class': 'form-control'}),
-            'tanggal_izin': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'alasan': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'file_pengajuan': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-        }
-        
 class CutiBersamaForm(forms.ModelForm):
     class Meta:
         model = CutiBersama
@@ -83,4 +58,3 @@ class CutiBersamaForm(forms.ModelForm):
             'tanggal': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'keterangan': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opsional'}),
         }
-        

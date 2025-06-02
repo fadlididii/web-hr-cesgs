@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.hrd.models import CutiBersama, Karyawan, TidakAmbilCuti
 from apps.hrd.forms import CutiBersamaForm
-from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
+# from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
 
 @login_required
 def input_cuti_bersama_view(request):

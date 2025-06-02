@@ -15,7 +15,7 @@ t = TanggalMerah(cache_path=None, cache_time=600)
 # 🔹 Setup Logging
 logger = logging.getLogger(__name__)
 
-# ✅ 1️⃣ Parsing Waktu dengan Format `HH:MM`
+#  1️⃣ Parsing Waktu dengan Format `HH:MM`
 def parse_time(value):
     """Mengubah string waktu `HH:MM` menjadi format time Django."""
     try:
@@ -25,27 +25,27 @@ def parse_time(value):
         return None  
     return None
 
-# ✅ 2️⃣ Deteksi Hari Libur dari `pytanggalmerah`
+#  2️⃣ Deteksi Hari Libur dari `pytanggalmerah`
 def is_hari_libur(tahun, bulan, day):
     """Cek apakah tanggal adalah hari libur atau akhir pekan (Sabtu/Minggu)."""
     t.set_date(str(tahun), f"{bulan:02d}", f"{day:02d}")  
     tanggal_obj = date(tahun, bulan, day)
     return tanggal_obj.weekday() in [5, 6] or t.check()  
 
-# ✅ 3️⃣ Ekstraksi Nama dari File Excel
+#  3️⃣ Ekstraksi Nama dari File Excel
 def extract_id_name(data):
     """Mengekstrak ID dan Nama dari file absensi."""
     filtered_data = data[data.iloc[:, 4] == "User ID.："]
     extracted_names = filtered_data.iloc[:, 11].values  
     return extracted_names
 
-# ✅ 4️⃣ Identifikasi Baris Waktu
+#  4️⃣ Identifikasi Baris Waktu
 def identify_time_rows(data):
     """Menentukan baris yang berisi data waktu."""
     user_id_rows = data[data.iloc[:, 4] == "User ID.："].index
     return user_id_rows
 
-# ✅ 5️⃣ Proses Absensi dengan Fuzzy Matching ke `nama_catatan_kehadiran`
+#  5️⃣ Proses Absensi dengan Fuzzy Matching ke `nama_catatan_kehadiran`
 from apps.hrd.models import Izin  # pastikan model Izin sudah diimpor
 
 # Tambahkan import untuk model Cuti
@@ -74,7 +74,7 @@ def process_absensi(file_path, bulan, tahun, selected_rule, file_name=None, file
         if best_match:
             best_matched_name, _, _ = best_match
             karyawan = daftar_karyawan[best_matched_name]
-            logger.info(f"✅ Matched: {user_name} -> {best_matched_name}")
+            logger.info(f" Matched: {user_name} -> {best_matched_name}")
         else:
             logger.warning(f"⚠️ WARNING: Nama {user_name} tidak cocok di database.")
             continue
@@ -166,7 +166,7 @@ def process_absensi(file_path, bulan, tahun, selected_rule, file_name=None, file
     logger.info(f"Data absensi untuk bulan {bulan}-{tahun} berhasil diproses!")
 
 
-# ✅ 6️⃣ Fungsi untuk Menandai Hari Libur Jika Semua Tidak Masuk
+#  6️⃣ Fungsi untuk Menandai Hari Libur Jika Semua Tidak Masuk
 def check_and_mark_holiday(bulan, tahun):
     """Cek apakah ada hari dalam bulan tersebut di mana semua karyawan tidak masuk, lalu tandai sebagai libur."""
     tanggal_absensi = Absensi.objects.filter(bulan=bulan, tahun=tahun).values_list('tanggal', flat=True).distinct()
@@ -182,4 +182,4 @@ def check_and_mark_holiday(bulan, tahun):
             Absensi.objects.filter(tanggal=tanggal).update(status_absensi="Libur", is_libur=True)
             logger.info(f"📅 {tanggal} ditandai sebagai LIBUR karena tidak ada yang hadir.")
 
-    logger.info(f"✅ Pengecekan libur selesai untuk bulan {bulan}-{tahun}!")
+    logger.info(f" Pengecekan libur selesai untuk bulan {bulan}-{tahun}!")

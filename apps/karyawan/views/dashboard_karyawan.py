@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from calendar import month_name
 from pytanggalmerah import TanggalMerah
-from django.http import JsonResponse
+from django.db.models import Max
 
 from apps.absensi.models import Absensi
 from apps.hrd.models import Cuti, Izin, JatahCuti, CutiBersama
@@ -17,17 +17,18 @@ def karyawan_dashboard(request):
     user = request.user
     karyawan = user.karyawan  
 
-    today = datetime.today()
-    tahun = int(request.GET.get("tahun", today.year))
-    bulan = int(request.GET.get("bulan", today.month))
+    # Mengambil bulan dan tahun terakhir dari data absensi
+    latest_data = Absensi.objects.aggregate(
+        latest_bulan=Max('bulan'),
+        latest_tahun=Max('tahun')
+    )
+    bulan = latest_data['latest_bulan'] or datetime.now().month
+    tahun = latest_data['latest_tahun'] or datetime.now().year
     
-    bulan_choices = [(i, month_name[i]) for i in range(1, 13)]
-    tahun_choices = list(range(datetime.now().year - 2, datetime.now().year + 3))
-
     # --- Statistik Pribadi ---
-    total_pengajuan_cuti = Cuti.objects.filter(id_karyawan=karyawan).count()
-    total_pengajuan_izin = Izin.objects.filter(id_karyawan=karyawan).count()
-    jatah = JatahCuti.objects.filter(karyawan=karyawan, tahun=datetime.now().year).first()
+    total_pengajuan_cuti = Cuti.objects.filter(id_karyawan=karyawan, status='Disetujui').count()
+    total_pengajuan_izin = Izin.objects.filter(id_karyawan=karyawan, status='Disetujui').count()
+    jatah = JatahCuti.objects.filter(karyawan=karyawan, tahun=tahun).first()
     sisa_cuti = jatah.sisa_cuti if jatah else 0
 
     # --- Hari Kerja Bulan Ini (Senin–Jumat) ---
@@ -61,14 +62,18 @@ def karyawan_dashboard(request):
     top_tepat_labels = [x["id_karyawan__nama"] for x in top_tepat_qs]
     top_tepat_data = [x["total_tepat"] for x in top_tepat_qs]
 
-
     # --- Libur Nasional Terdekat (30 hari ke depan) ---
+    today = datetime.today()
     libur_terdekat = []
     tanggal_mulai = today.date()
     tanggal_sampai = tanggal_mulai + timedelta(days=30)
 
     for hari in range((tanggal_sampai - tanggal_mulai).days):
         tanggal = tanggal_mulai + timedelta(days=hari)
+        
+        if tanggal.weekday() == 6:
+            continue  # Lewati hari Minggu
+
         t = TanggalMerah()
         t.set_date(str(tanggal.year), f"{tanggal.month:02d}", f"{tanggal.day:02d}")
         if t.check():
@@ -88,8 +93,6 @@ def karyawan_dashboard(request):
         "top_tepat_labels": top_tepat_labels,
         "top_tepat_data": top_tepat_data,
         "libur_terdekat": libur_terdekat,
-        "bulan_choices": bulan_choices,
-        "tahun_choices": tahun_choices,
         "selected_bulan": str(bulan),
         "selected_tahun": str(tahun),
     }
@@ -112,7 +115,7 @@ def calendar_events(request):
         events.append({
             "title": f"Cuti ({len(names)} orang)",
             "start": date.isoformat(),
-            "color": "#f5365c",
+            "color": "#4e73df",
             "description": ", ".join(names)  # untuk custom tooltip
         })
 
@@ -142,7 +145,7 @@ def calendar_events(request):
                 events.append({
                     "title": event,
                     "start": current_date.isoformat(),
-                    "color": "#fb6340",
+                    "color": "#dc3545",
                     "allDay": True
                 })
         current_date += timedelta(days=1)
@@ -152,7 +155,7 @@ def calendar_events(request):
         events.append({
             "title": f"Cuti Bersama: {cb.keterangan or 'Cuti Bersama'}",
             "start": cb.tanggal.isoformat(),
-            "color": "#5e72e4",
+            "color": "#e55353",
             "allDay": True
         })
 
@@ -169,11 +172,17 @@ def calendar_events(request):
 
 @login_required
 def data_dashboard_karyawan(request):
+    import calendar
+    
     user = request.user
     karyawan = user.karyawan
 
-    bulan = int(request.GET.get("bulan", datetime.now().month))
-    tahun = int(request.GET.get("tahun", datetime.now().year))
+    latest_data = Absensi.objects.filter(id_karyawan=karyawan).aggregate(
+        latest_bulan=Max('bulan'),
+        latest_tahun=Max('tahun')
+    )
+    bulan = latest_data['latest_bulan'] or datetime.now().month
+    tahun = latest_data['latest_tahun'] or datetime.now().year
 
     # hitung semua data yang sama seperti view utama
     total_pengajuan_cuti = Cuti.objects.filter(id_karyawan=karyawan, tanggal_mulai__year=tahun, tanggal_mulai__month=bulan).count()
@@ -212,4 +221,6 @@ def data_dashboard_karyawan(request):
         "top_terlambat_data": top_terlambat_data,
         "top_tepat_labels": top_tepat_labels,
         "top_tepat_data": top_tepat_data,
+        "nama_bulan": calendar.month_name[bulan],
+        "tahun": tahun,
     })

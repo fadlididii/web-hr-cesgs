@@ -15,6 +15,23 @@ class Karyawan(models.Model):
         ('Aktif', 'Aktif'),
         ('Tidak Aktif', 'Tidak Aktif')
     ]
+    
+    DIVISI_CHOICES = [
+        ('General', 'General'),
+        ('DART', 'DART'),
+        ('Annotation', 'Annotation'),
+        ('Rinov', 'Rinov'),
+        ('Basic Research', 'Basic Research'),
+        ('Dataset', 'Dataset'),
+        ('Media Dataset', 'Media Dataset'),
+        ('Media Non Dataset', 'Media Non Dataset'),
+        ('Consulting', 'Consulting'),
+    ]
+    
+    JENIS_KELAMIN_CHOICES = [
+        ('L', 'Laki-laki'),
+        ('P', 'Perempuan'),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="karyawan")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -25,14 +42,16 @@ class Karyawan(models.Model):
         null=True, 
         help_text="Nama yang digunakan dalam catatan kehadiran"
     )
+    jenis_kelamin = models.CharField(max_length=1, choices=JENIS_KELAMIN_CHOICES, default='L')
     jabatan = models.CharField(max_length=50)
-    divisi = models.CharField(max_length=50)
+    divisi = models.CharField(max_length=50, choices=DIVISI_CHOICES)
     alamat = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     mulai_kontrak = models.DateField(null=True, blank=True)
     batas_kontrak = models.DateField(null=True, blank=True)
     status_keaktifan = models.CharField(max_length=15, choices=STATUS_KEAKTIFAN_CHOICES, default='Aktif')
     no_telepon = models.CharField(max_length=15, null=True, blank=True)
+    tanggal_lahir = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = 'karyawan'

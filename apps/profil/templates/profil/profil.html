@@ -52,13 +52,10 @@
                   </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Email</label>
-                        {{ form.email }}
-                        <small class="form-text text-danger d-none" id="emailWarning">
-                            Format email tidak valid (contoh: nama@email.com).
-                        </small>
-                    </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" value="{{ form.email.value }}" class="form-control" readonly>
+                  </div>                  
                 </div>
               </div>
 
@@ -115,17 +112,6 @@
                 </div>
             </div>            
 
-            <hr class="my-4">
-
-            <h6 class="heading-small text-muted mb-4">Keamanan</h6>
-            <div class="pl-lg-4">
-              <div class="form-group">
-                <label>Password Baru (Opsional)</label>
-                {{ form.password }}
-                <small class="form-text text-muted">Kosongkan jika tidak ingin mengganti password.</small>
-              </div>
-            </div>
-
             <div class="text-right">
               <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
             </div>
@@ -158,14 +144,6 @@
           namaWarning.classList.remove('d-none');
       } else {
           namaWarning.classList.add('d-none');
-      }
-  });
-
-  emailInput.addEventListener('input', () => {
-      if (!regexEmail.test(emailInput.value)) {
-          emailWarning.classList.remove('d-none');
-      } else {
-          emailWarning.classList.add('d-none');
       }
   });
 

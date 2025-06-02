@@ -6,7 +6,7 @@ from django.contrib import messages
 from ..forms import RulesForm
 from ..models import Rules
 
-# ✅ 1️⃣ Menampilkan daftar aturan absensi
+# Menampilkan daftar aturan absensi
 @login_required
 @role_required(['HRD'])
 def list_rules(request):
@@ -19,7 +19,7 @@ def list_rules(request):
     
     return render(request, 'absensi/rules/list.html', {'rules': rules})
 
-# ✅ 2️⃣ Menambahkan aturan absensi baru
+# Menambahkan aturan absensi baru
 @login_required
 @role_required(['HRD'])
 def create_rule(request):
@@ -35,7 +35,7 @@ def create_rule(request):
 
     return render(request, 'absensi/rules/form.html', {'form': form, 'title': 'Tambah Aturan'})
 
-# ✅ 3️⃣ Mengedit aturan absensi yang sudah ada
+# Mengedit aturan absensi yang sudah ada
 @login_required
 @role_required(['HRD'])
 def update_rule(request, id):
@@ -52,7 +52,7 @@ def update_rule(request, id):
 
     return render(request, 'absensi/rules/form.html', {'form': form, 'title': 'Edit Aturan'})
 
-# ✅ 4️⃣ Menghapus aturan absensi
+# Menghapus aturan absensi
 @login_required
 @role_required(['HRD'])
 def delete_rule(request, id):

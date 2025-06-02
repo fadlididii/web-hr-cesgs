@@ -39,6 +39,14 @@
                         </small>
                     </div>
                     <div class="form-group">
+                        <label>Jenis Kelamin</label>
+                        {{ form.jenis_kelamin }}
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Lahir</label>
+                        {{ form.tanggal_lahir }}
+                    </div>
+                    <div class="form-group">
                         <label>Role</label>
                         {{ form.role }}
                     </div>
@@ -48,8 +56,17 @@
                     </div>
                     <div class="form-group">
                         <label>Divisi</label>
-                        {{ form.divisi }}
+                        <select name="divisi" id="id_divisi" class="form-control">
+                            {% for value, label in form.fields.divisi.choices %}
+                                <option value="{{ value }}" {% if form.divisi.value == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
+                </div>
+                
+                <div class="col-md-6">
                     <div class="form-group">
                         <label>No. Telepon/WA</label>
                         {{ form.no_telepon }}
@@ -57,9 +74,6 @@
                             Nomor telepon harus dimulai dengan <b>08</b> dan berisi 10-13 digit angka.
                         </small>
                     </div>
-                </div>
-
-                <div class="col-md-6">
                     <div class="form-group">
                         <label>Alamat</label>
                         {{ form.alamat }}

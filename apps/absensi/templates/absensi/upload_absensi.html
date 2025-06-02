@@ -131,9 +131,65 @@
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-info w-100">Cari Data</button>
+                        
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 🔹 Pivot Tabel Rekap Absensi -->
+    <div class="card shadow mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Rekap Absensi Karyawan {{ selected_bulan }}/{{ selected_tahun }}</h3>
+            <a href="{% url 'export_rekap_absensi_excel' %}?bulan={{ selected_bulan }}&tahun={{ selected_tahun }}&q={{ query }}" class="btn btn-success btn-sm">
+                📁 Download Excel
+            </a>            
+        </div>
+        <div class="card-body table-responsive">
+            {% if rekap_absensi %}
+            <table class="table table-bordered table-hover text-center">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Nama Karyawan</th>
+                        <th>Tepat Waktu</th>
+                        <th>Terlambat</th>
+                        <th>Cuti</th>
+                        <th>Izin</th>
+                        <th>Tidak Hadir</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rekap in rekap_absensi %}
+                    <tr>
+                        <td>{{ rekap.nama }}</td>
+                        <td>
+                            <span class="badge badge-success">{{ rekap.tepat_waktu }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-warning">{{ rekap.terlambat }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-info">{{ rekap.cuti }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary">{{ rekap.izin }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-danger">{{ rekap.tidak_hadir }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">{{ rekap.total }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p class="text-center text-muted">⚠ Tidak ada data rekap absensi untuk bulan ini.</p>
+            {% endif %}
+            {% include 'includes/pagination.html' with page_obj=rekap_absensi %}
         </div>
     </div>
 

@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import JatahCuti, DetailJatahCuti, Karyawan, CutiBersama
 from datetime import datetime
-from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
+# from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
 
 @receiver(post_save, sender=JatahCuti)
 def create_detail_jatah_cuti(sender, instance, created, **kwargs):

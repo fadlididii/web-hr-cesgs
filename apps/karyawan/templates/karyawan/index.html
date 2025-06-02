@@ -74,42 +74,21 @@
             </div>
           </div>
         </div>
+        <!-- Sebelumnya: Hari Kerja Bulan Ini -->
         <div class="col-xl-3 col-md-6">
           <div class="card card-stats">
             <div class="card-body">
               <div class="row">
                 <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Hari Kerja Bulan Ini</h5>
-                  <span class="h2 font-weight-bold mb-0">{{ hari_kerja }}</span>
+                  <h5 class="card-title text-uppercase text-muted mb-0">Jam Saat Ini</h5>
+                  <span class="h2 font-weight-bold mb-0" id="real-time-clock">--:--:--</span>
                 </div>
                 <div class="col-auto">
                   <div class="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
-                    <i class="ni ni-chart-bar-32"></i>
+                    <i class="ni ni-watch-time"></i>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <!-- Filter Bulan dan Tahun setelah header -->
-        <div class="container-fluid mt-3">
-          <div class="row mb-4">
-            <div class="col-md-12 d-flex align-items-center">
-              <label for="filter-bulan" class="mr-2 filter-label text-white font-weight-bold">Bulan:</label>
-              <select id="filter-bulan" class="form-control form-control-sm mr-3 bg-white text-dark" style="min-width: 120px;">
-                {% for num, nama in bulan_choices %}
-                <option value="{{ num }}" {% if selected_bulan == num|stringformat:"i" %}selected{% endif %}>{{ nama }}</option>
-                {% endfor %}
-              </select>
-
-              <label for="filter-tahun" class="mr-2 filter-label text-white font-weight-bold">Tahun:</label>
-              <select id="filter-tahun" class="form-control form-control-sm mr-3 bg-white text-dark" style="min-width: 100px;">
-                {% for th in tahun_choices %}
-                <option value="{{ th }}" {% if selected_tahun == th|stringformat:"i" %}selected{% endif %}>{{ th }}</option>
-                {% endfor %}
-              </select>
-
-              <button id="apply-filter" class="btn btn-sm btn-light text-primary font-weight-bold">Terapkan</button>
             </div>
           </div>
         </div>
@@ -244,29 +223,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Inisialisasi data awal
-    const bulan = document.getElementById('filter-bulan').value;
-    const tahun = document.getElementById('filter-tahun').value;
-    
-    // Inisialisasi kalender
-    initializeCalendar("/karyawan/kalender/events/?bulan=" + bulan + "&tahun=" + tahun);
-    
-    // Load data dashboard awal
-    loadDashboardData(bulan, tahun);
-    
-    // Tambahkan event listener untuk tombol filter
-    document.getElementById('apply-filter').addEventListener('click', function(e) {
-      e.preventDefault(); // Mencegah refresh halaman
-      
-      const bulan = document.getElementById('filter-bulan').value;
-      const tahun = document.getElementById('filter-tahun').value;
-      
-      // Perbarui kalender dengan parameter filter baru
-      initializeCalendar("/karyawan/kalender/events/?bulan=" + bulan + "&tahun=" + tahun);
-      
-      // Perbarui data dashboard
-      loadDashboardData(bulan, tahun);
-    });
+    initializeCalendar("/karyawan/kalender/events/");
+    loadDashboardData();
   });
   
   // Function to initialize the calendar
@@ -314,8 +272,8 @@
   }
   
   // Fungsi untuk memuat data dashboard
-  function loadDashboardData(bulan, tahun) {
-    fetch(`/karyawan/data-dashboard/?bulan=${bulan}&tahun=${tahun}`)
+  function loadDashboardData() {
+    fetch(`/karyawan/data-dashboard/`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Network response was not ok');
@@ -323,27 +281,25 @@
         return res.json();
       })
       .then(data => {
+        // Update nilai statistik
+        document.querySelector('[data-id="sisa-cuti"]').textContent = data.sisa_cuti;
+        document.querySelector('[data-id="pengajuan-cuti"]').textContent = data.total_pengajuan_cuti;
+        document.querySelector('[data-id="pengajuan-izin"]').textContent = data.total_pengajuan_izin;
+  
+        // Update grafik
         updateChart('chart-late-employees', data.top_terlambat_labels, data.top_terlambat_data, 'Jumlah Terlambat');
         updateChart('chart-ontime-employees', data.top_tepat_labels, data.top_tepat_data, 'Jumlah Tepat Waktu');
-        
-        // Update informasi lainnya
-        if (document.querySelector('[data-id="sisa-cuti"]')) {
-          document.querySelector('[data-id="sisa-cuti"]').textContent = data.sisa_cuti;
-        }
-        if (data.total_pengajuan_cuti) {
-          document.querySelector('[data-id="pengajuan-cuti"]').textContent = data.total_pengajuan_cuti;
-        }
-        if (data.total_pengajuan_izin) {
-          document.querySelector('[data-id="pengajuan-izin"]').textContent = data.total_pengajuan_izin;
-        }
-        
-        // Update judul grafik dengan bulan dan tahun yang dipilih
-        updateChartTitles(bulan, tahun);
+  
+        // Judul dinamis dengan bulan dan tahun dari backend
+        const judulTerlambat = `Top 5 Terlambat ${data.nama_bulan} ${data.tahun}`;
+        const judulTepatWaktu = `Top 5 Tepat Waktu ${data.nama_bulan} ${data.tahun}`;
+        document.getElementById('judul-terlambat').textContent = judulTerlambat;
+        document.getElementById('judul-tepat-waktu').textContent = judulTepatWaktu;
       })
       .catch(error => {
-        console.error('Error fetching dashboard data:', error);
+        console.error('There was a problem with the fetch operation:', error);
       });
-  }
+  }  
   
   // Fungsi untuk memperbarui judul grafik
   function updateChartTitles(bulan, tahun) {
@@ -355,5 +311,19 @@
     document.getElementById('judul-terlambat').textContent = `Top 5 Terlambat ${namaBulan} ${tahun}`;
     document.getElementById('judul-tepat-waktu').textContent = `Top 5 Tepat Waktu ${namaBulan} ${tahun}`;
   }
+
+  // Fungsi untuk jam
+  function updateClock() {
+    const now = new Date();
+    const jam = now.getHours().toString().padStart(2, '0');
+    const menit = now.getMinutes().toString().padStart(2, '0');
+    const detik = now.getSeconds().toString().padStart(2, '0');
+    const currentTime = `${jam}:${menit}:${detik} WIB`;
+    document.getElementById('real-time-clock').textContent = currentTime;
+  }
+
+  // Jalankan pertama kali & per detik
+  setInterval(updateClock, 1000);
+  updateClock();
 </script>
 {% endblock javascripts %}

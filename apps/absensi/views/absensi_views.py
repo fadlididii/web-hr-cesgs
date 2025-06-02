@@ -5,10 +5,11 @@ from apps.authentication.decorators import role_required
 from django.contrib import messages
 from apps.absensi.forms import UploadAbsensiForm
 from apps.absensi.models import Absensi
+from apps.hrd.models import Karyawan
 from apps.absensi.utils import process_absensi
 from datetime import datetime
 import openpyxl
-from django.db.models import Max
+from django.db.models import Max, Count, Q
 from django.http import HttpResponse
 from django.conf import settings
 import os
@@ -25,13 +26,13 @@ def upload_absensi(request):
 
     query = request.GET.get('q', '')
 
-    # 🔎 Filter absensi
+    # Filter absensi
     absensi_list = Absensi.objects.filter(bulan=bulan, tahun=tahun)
     if query:
         absensi_list = absensi_list.filter(id_karyawan__nama__icontains=query)
     absensi_list = absensi_list.order_by('tanggal', 'id_karyawan_id')
 
-    # 🔁 Paginate
+    # Paginate
     paginator = Paginator(absensi_list, 10)
     page = request.GET.get('page')
     try:
@@ -41,7 +42,7 @@ def upload_absensi(request):
     except EmptyPage:
         absensi_list = paginator.page(paginator.num_pages)
 
-    # ✅ Upload file
+    # Upload file
     if request.method == 'POST':
         form = UploadAbsensiForm(request.POST, request.FILES)
         if form.is_valid():
@@ -76,13 +77,67 @@ def upload_absensi(request):
     else:
         form = UploadAbsensiForm()
 
-    # 🔁 Ambil file yang sudah pernah diunggah (distinct by file name)
+    # Ambil file yang sudah pernah diunggah (distinct by file name)
     uploaded_files = (
         Absensi.objects
         .values('bulan', 'tahun', 'nama_file', 'file_url')
         .annotate(created_at=Max('created_at'))
         .order_by('-created_at')
     )
+    
+    # Buat pivot tabel rekap absensi
+    rekap_absensi = []
+    
+    if bulan and tahun:
+        # Ambil semua karyawan yang memiliki data absensi di bulan dan tahun yang dipilih
+        karyawan_dengan_absensi = Karyawan.objects.filter(
+            absensi__bulan=bulan, 
+            absensi__tahun=tahun
+        ).distinct()
+        
+        for karyawan in karyawan_dengan_absensi:
+            # Filter absensi untuk karyawan ini di bulan dan tahun yang dipilih
+            absensi_karyawan = Absensi.objects.filter(
+                id_karyawan=karyawan,
+                bulan=bulan,
+                tahun=tahun
+            )
+            
+            # Hitung jumlah untuk setiap status
+            tepat_waktu = absensi_karyawan.filter(status_absensi='Tepat Waktu').count()
+            terlambat = absensi_karyawan.filter(status_absensi='Terlambat').count()
+            
+            # Hitung jumlah cuti (status yang mengandung kata 'Cuti')
+            cuti = absensi_karyawan.filter(status_absensi__icontains='Cuti').count()
+            
+            # Hitung jumlah izin (status yang mengandung kata 'Izin')
+            izin = absensi_karyawan.filter(status_absensi__icontains='Izin').count()
+            
+            # Hitung jumlah tidak hadir
+            tidak_hadir = absensi_karyawan.filter(status_absensi='Tidak Hadir').count()
+            
+            # Hitung total hari kerja (tidak termasuk hari libur)
+            total = absensi_karyawan.exclude(status_absensi='Libur').count()
+            
+            rekap_absensi.append({
+                'nama': karyawan.nama,
+                'tepat_waktu': tepat_waktu,
+                'terlambat': terlambat,
+                'cuti': cuti,
+                'izin': izin,
+                'tidak_hadir': tidak_hadir,
+                'total': total
+            })
+            
+    # paginasi pivot tabel
+    paginator = Paginator(rekap_absensi,5)
+    page = request.GET.get('page')
+    try:
+        rekap_absensi = paginator.page(page)
+    except PageNotAnInteger:
+        rekap_absensi = paginator.page(1)
+    except EmptyPage:   
+        rekap_absensi = paginator.page(paginator.num_pages)
 
     context = {
         'form': form,
@@ -93,11 +148,12 @@ def upload_absensi(request):
         'bulan_choices': [(i, datetime(2024, i, 1).strftime('%B')) for i in range(1, 13)],
         'tahun_choices': range(2020, 2031),
         'query': query,
+        'rekap_absensi': rekap_absensi,  # Tambahkan rekap absensi ke context
     }
     return render(request, 'absensi/upload_absensi.html', context)
 
 
-# ✅ 2️⃣ Menghapus satu data absensi
+# Menghapus satu data absensi
 @login_required
 @role_required(['HRD'])
 def delete_absensi(request, id):
@@ -108,7 +164,7 @@ def delete_absensi(request, id):
     return redirect("upload_absensi")
 
 
-# ✅ 3️⃣ Menghapus semua data absensi dalam bulan & tahun tertentu
+# Menghapus semua data absensi dalam bulan & tahun tertentu
 @login_required
 @role_required(['HRD'])
 def hapus_absensi_bulanan(request):
@@ -161,4 +217,62 @@ def export_absensi_excel(request):
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     wb.save(response)
+    return response
+
+@login_required
+@role_required(['HRD'])
+def export_rekap_absensi_excel(request):
+    bulan = request.GET.get('bulan')
+    tahun = request.GET.get('tahun')
+    q = request.GET.get('q', '')
+
+    if not bulan or not tahun:
+        messages.error(request, "Bulan dan tahun harus dipilih.")
+        return redirect("upload_absensi")
+
+    # Filter karyawan dengan absensi
+    karyawan_dengan_absensi = Karyawan.objects.filter(
+        absensi__bulan=bulan,
+        absensi__tahun=tahun,
+        nama__icontains=q
+    ).distinct()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Rekap Pivot Absensi"
+
+    # Header
+    ws.append(["Nama", "Tepat Waktu", "Terlambat", "Cuti", "Izin", "Tidak Hadir", "Total"])
+
+    # Data
+    for karyawan in karyawan_dengan_absensi:
+        absensi_karyawan = Absensi.objects.filter(
+            id_karyawan=karyawan,
+            bulan=bulan,
+            tahun=tahun
+        )
+        tepat_waktu = absensi_karyawan.filter(status_absensi='Tepat Waktu').count()
+        terlambat = absensi_karyawan.filter(status_absensi='Terlambat').count()
+        cuti = absensi_karyawan.filter(status_absensi__icontains='Cuti').count()
+        izin = absensi_karyawan.filter(status_absensi__icontains='Izin').count()
+        tidak_hadir = absensi_karyawan.filter(status_absensi='Tidak Hadir').count()
+        total = absensi_karyawan.exclude(status_absensi='Libur').count()
+
+        ws.append([
+            karyawan.nama,
+            tepat_waktu,
+            terlambat,
+            cuti,
+            izin,
+            tidak_hadir,
+            total
+        ])
+
+    # Buat respons download
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    filename = f"rekap_pivot_absensi_{bulan}_{tahun}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    
+    
     return response

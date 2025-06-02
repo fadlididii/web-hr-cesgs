@@ -9,6 +9,13 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         extra_fields.pop('username', None)  # Buang username karena kita pakai email
         
+        # Generate password jika tidak disediakan
+        if not password and 'nama' in extra_fields and 'tanggal_lahir' in extra_fields:
+            # Ambil nama depan saja
+            nama_depan = extra_fields['nama'].split()[0].lower()
+            tanggal_lahir = extra_fields['tanggal_lahir'].strftime('%d%m%Y')
+            password = f"{nama_depan}{tanggal_lahir}"
+        
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

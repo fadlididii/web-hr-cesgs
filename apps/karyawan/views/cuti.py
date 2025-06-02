@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from apps.hrd.models import Cuti, Karyawan, JatahCuti
-from apps.hrd.forms import CutiForm
+from apps.karyawan.forms import CutiForm
 from datetime import datetime
 from notifications.signals import notify
 from apps.authentication.models import User
@@ -13,7 +13,7 @@ from apps.authentication.models import User
 def cuti_view(request):
     karyawan = get_object_or_404(Karyawan, user=request.user)
 
-    # ✅ Batasi hanya untuk HRD & Karyawan Tetap
+    #  Batasi hanya untuk HRD & Karyawan Tetap
     if karyawan.user.role not in ['HRD', 'Karyawan Tetap']:
         messages.error(request, "Anda tidak memiliki akses ke fitur pengajuan cuti.")
         return redirect('karyawan_dashboard')
@@ -45,10 +45,10 @@ def cuti_view(request):
     # Data riwayat
     riwayat = Cuti.objects.filter(id_karyawan=karyawan).order_by('-created_at')
 
-    # ✅ Ambil tahun sekarang
+    #  Ambil tahun sekarang
     tahun_sekarang = timezone.now().year
 
-    # ✅ Ambil jatah cuti tahunan (asumsi hanya 1 objek per tahun per karyawan)
+    #  Ambil jatah cuti tahunan (asumsi hanya 1 objek per tahun per karyawan)
     jatah = JatahCuti.objects.filter(karyawan=karyawan, tahun=tahun_sekarang).first()
     
     # paginasi
@@ -82,7 +82,7 @@ def cuti_view(request):
 def hapus_cuti_view(request, id):
     karyawan = get_object_or_404(Karyawan, user=request.user)
 
-    # ✅ Batasi hanya role yang diizinkan menghapus
+    #  Batasi hanya role yang diizinkan menghapus
     if karyawan.user.role not in ['HRD', 'Karyawan Tetap']:
         messages.error(request, "Anda tidak memiliki akses untuk menghapus pengajuan cuti.")
         return redirect('pengajuan_cuti')

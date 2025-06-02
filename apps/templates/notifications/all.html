@@ -27,13 +27,15 @@
           <div class="list-group-item {% if notification.unread %}list-group-item-light{% endif %}">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <p class="mb-1">
-                  <strong>{{ notification.actor }}</strong> {{ notification.verb }}
-                  {% if notification.target %}
-                    {{ notification.target }}
-                  {% endif %}
-                </p>
-                <p class="text-muted mb-0">{{ notification.description|default:"" }}</p>
+                <a href="{% url 'mark_as_read' notification.id %}" class="text-decoration-none text-dark">
+                  <p class="mb-1">
+                    <strong>{{ notification.actor }}</strong> {{ notification.verb }}
+                    {% if notification.target %}
+                      {{ notification.target }}
+                    {% endif %}
+                  </p>
+                  <p class="text-muted mb-0">{{ notification.description|default:"" }}</p>
+                </a>
               </div>
               <small class="text-muted">{{ notification.timestamp|timesince }} yang lalu</small>
             </div>

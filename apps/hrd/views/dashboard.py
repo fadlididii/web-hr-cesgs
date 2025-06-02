@@ -171,14 +171,25 @@ def hrd_dashboard(request):
     tahun_choices = [(str(i), str(i)) for i in range(2020, 2031)]
     
     # Hitung jumlah karyawan per divisi
-    jumlah_per_divisi = Karyawan.objects.filter(
-        status_keaktifan='Aktif'
-    ).values('divisi').annotate(
-        jumlah=Count('id')
-    ).order_by('divisi')
-
+    jumlah_per_divisi = Karyawan.objects.filter(status_keaktifan='Aktif').values('divisi').annotate(jumlah=Count('id')).order_by('divisi')
+    
+    # Get karyawan names per divisi
+    karyawan_per_divisi = {}
+    for divisi in jumlah_per_divisi:
+        karyawan_per_divisi[divisi['divisi']] = list(Karyawan.objects.filter(
+        status_keaktifan='Aktif',
+        divisi=divisi['divisi']
+        ).values_list('nama', flat=True))
+    
     # Konversi ke dictionary untuk template
     jumlah_per_divisi_dict = {item['divisi']: item['jumlah'] for item in jumlah_per_divisi}
+    
+    # jumlah divisi paginasi dengan nama karyawan
+    jumlah_divisi_json = json.dumps([{
+    "divisi": k,
+    "jumlah": v,
+    "karyawan": karyawan_per_divisi[k]
+    } for k, v in jumlah_per_divisi_dict.items()], cls=DjangoJSONEncoder)
     
     # tanggal merah 
     today = datetime.now().date()
@@ -187,18 +198,20 @@ def hrd_dashboard(request):
     libur_terdekat = []
 
     for d in next_30_days:
+        if d.weekday() == 6:
+            continue  # Lewati hari Minggu
+
         t = TanggalMerah()
         t.set_date(str(d.year), f"{d.month:02d}", f"{d.day:02d}")
         if t.check():
             events = t.get_event()
             if events:
-                for event in events:  # tangani kalau 1 hari ada >1 event
+                for event in events:
                     libur_terdekat.append({
                         'summary': event,
                         'date': d
                     })
-                    
-            
+
     # context
     context = {
         "top_5_late": top_5_late,
@@ -224,6 +237,7 @@ def hrd_dashboard(request):
         "selected_tahun": str(tahun),
         'jumlah_per_divisi_dict': jumlah_per_divisi_dict,
         'libur_json': json.dumps(libur_terdekat, cls=DjangoJSONEncoder),
+        "jumlah_divisi_json": jumlah_divisi_json,
     }
 
     return render(request, "hrd/index.html", context)
@@ -245,7 +259,7 @@ def calendar_events(request):
         events.append({
             "title": f"Cuti ({len(names)} orang)",
             "start": date.isoformat(),
-            "color": "#f5365c",
+            "color": "#4e73df",
             "description": ", ".join(names),
             "allDay": True
         })
@@ -270,6 +284,7 @@ def calendar_events(request):
     current_date = today
 
     while current_date <= end_date:
+
         t = TanggalMerah()
         t.set_date(str(current_date.year), f"{current_date.month:02d}", f"{current_date.day:02d}")
         if t.check():
@@ -277,17 +292,18 @@ def calendar_events(request):
                 events.append({
                     "title": event,
                     "start": current_date.isoformat(),
-                    "color": "#fb6340",
+                    "color": "#dc3545",
                     "allDay": True
                 })
         current_date += timedelta(days=1)
+
 
     # Cuti Bersama
     for cb in CutiBersama.objects.all():
         events.append({
             "title": f"Cuti Bersama: {cb.keterangan or 'Cuti Bersama'}",
             "start": cb.tanggal.isoformat(),
-            "color": "#5e72e4",
+            "color": "#e55353",
             "allDay": True
         })
 

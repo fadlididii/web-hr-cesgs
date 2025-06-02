@@ -32,7 +32,7 @@ class ProfilForm(forms.ModelForm):
                 'title': 'Nama hanya boleh berisi huruf dan spasi.'
             }),
             'jabatan': forms.TextInput(attrs={'class': 'form-control'}),
-            'divisi': forms.TextInput(attrs={'class': 'form-control'}),
+            'divisi': forms.Select(attrs={'class': 'form-control'}),
             'alamat': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'mulai_kontrak': forms.DateInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
