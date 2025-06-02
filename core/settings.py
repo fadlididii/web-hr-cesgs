@@ -96,20 +96,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'hr_cesgs',
-#         'USER': 'hr_user',
-#         'PASSWORD': 'hr_cesgs',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
-
 load_dotenv()
 
 DATABASES = {
