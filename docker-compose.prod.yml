@@ -6,22 +6,19 @@ services:
     env_file: .env
     build: .
     environment:
-      VIRTUAL_HOST: hr.esgi.dev
+      VIRTUAL_HOST: hr.esgi.ai
       VIRTUAL_PORT: 5005
-      NODE_ENV: "development"
-      WAIT_HOSTS: "db:${DB_PORT}"
+      LETSENCRYPT_HOST: hr.esgi.ai
+      LETSENCRYPT_EMAIL: info.cesgs@gmail.com
+      MODE: "production"
+    volumes:
+      - ./secrets:/root/secrets:ro
     ports:
       - "${APP_PORT}:5005"
     expose:
       - 5005
-    volumes:
-      - ./secrets:/root/secrets:ro
-      - .:/root
     networks:
-      - db_network
       - web_network
-    depends_on:
-      - db
   proxy:
     image: jwilder/nginx-proxy:alpine
     container_name: proxy
@@ -46,29 +43,22 @@ services:
       - app
     networks:
       - web_network
-  db:
-    container_name: db
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
     restart: always
-    image: "bitnami/postgresql:latest"
-    env_file:
-      - .env
-    environment:
-      - POSTGRESQL_DATABASE=${DB_NAME}
-      - POSTGRESQL_USERNAME=${DB_USER}
-      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
-      - POSTGRESQL_PORT_NUMBER=${DB_PORT}
-    ports:
-      - "${DB_PORT}:${DB_PORT}"
-    expose:
-      - "${DB_PORT}"
     volumes:
-      - postgresql_data:/bitnami/postgresql
+      - ./secrets/certs:/etc/nginx/certs
+      - ./config/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - ./config/nginx-proxy/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      DHPARAM_GENERATION: "false"
+      DEFAULT_EMAIL: info.cesgs@gmail.com
+    depends_on:
+      - proxy
     networks:
-      - db_network
+      - web_network
 networks:
-  db_network:
-    driver: bridge
   web_network:
     driver: bridge
-volumes:
-  postgresql_data:
