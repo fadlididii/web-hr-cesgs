@@ -63,12 +63,22 @@
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Jabatan</label>
-                    {{ form.jabatan }}
+                    {{ form.jabatan}} 
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function() {
+                        document.getElementById("id_jabatan").setAttribute("disabled", "true");
+                      });
+                    </script>
                   </div>
                   <div class="form-group">
                     <label>Divisi</label>
                     {{ form.divisi }}
-                  </div>
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function() {
+                        document.getElementById("id_divisi").setAttribute("disabled", "true");
+                      });
+                    </script>
+                  </div>                  
                   <div class="form-group">
                     <label>Status</label>
                     {{ form.status }}

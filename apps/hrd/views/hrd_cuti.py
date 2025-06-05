@@ -4,9 +4,10 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.http import HttpResponse
 from apps.hrd.models import Cuti, TidakAmbilCuti
-# from apps.hrd.utils.jatah_cuti import isi_cuti_tahunan, kembalikan_jatah_tidak_ambil_cuti, rapikan_cuti_tahunan
+from apps.hrd.utils.jatah_cuti import isi_cuti_tahunan, kembalikan_jatah_tidak_ambil_cuti, rapikan_cuti_tahunan
 from notifications.signals import notify
 import openpyxl
+from apps.hrd.utils.jatah_cuti import isi_cuti_tahunan, kembalikan_jatah_tidak_ambil_cuti
 
 @login_required
 def approval_cuti_view(request):
@@ -84,7 +85,9 @@ def approval_cuti_view(request):
 
                 if aksi == 'disetujui' and data.id_karyawan.user.role in ['HRD', 'Karyawan Tetap']:
                     daftar_tanggal = data.tanggal.all()
+                    # Kembalikan jatah cuti
                     kembalikan_jatah_tidak_ambil_cuti(data.id_karyawan, daftar_tanggal)
+                    
                     rapikan_cuti_tahunan(data.id_karyawan, tahun=daftar_tanggal.first().tanggal.year)
 
                 data.save()

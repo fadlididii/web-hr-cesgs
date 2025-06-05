@@ -3,9 +3,10 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from apps.hrd.models import Cuti, Karyawan, JatahCuti
+from apps.hrd.models import Cuti, Karyawan, JatahCuti, DetailJatahCuti
 from apps.karyawan.forms import CutiForm
 from datetime import datetime
+import calendar
 from notifications.signals import notify
 from apps.authentication.models import User
 
@@ -26,13 +27,12 @@ def cuti_view(request):
             cuti.id_karyawan = karyawan
             cuti.save()
 
-            # 🔔 Kirim notifikasi ke HRD
-            hr_users = User.objects.filter(role='HRD')
+            # Kirim notifikasi ke HRD
             notify.send(
                 sender=request.user,
-                recipient=hr_users,
-                verb="mengajukan cuti",
-                description=f"{karyawan.nama} mengajukan cuti dari {cuti.tanggal_mulai} sampai {cuti.tanggal_selesai}",
+                recipient=User.objects.filter(role='HRD'),  # Semua user dengan role HRD
+                verb=f"Pengajuan cuti baru",
+                description=f"Pengajuan cuti baru dari {karyawan.nama} untuk tanggal {cuti.tanggal_mulai} sampai {cuti.tanggal_selesai}",
                 target=cuti,
                 data={"url": "/hrd/approval-cuti/"}
             )
@@ -47,6 +47,27 @@ def cuti_view(request):
 
     #  Ambil tahun sekarang
     tahun_sekarang = timezone.now().year
+    bulan_sekarang = timezone.now().month
+    
+    # Cek jatah cuti yang akan expired bulan ini (dari tahun lalu)
+    tahun_lalu = tahun_sekarang - 1
+    cuti_akan_expired = []
+    
+    # Cek jatah cuti tahun lalu yang belum dipakai dan bulannya = bulan sekarang
+    jatah_tahun_lalu = JatahCuti.objects.filter(karyawan=karyawan, tahun=tahun_lalu).first()
+    if jatah_tahun_lalu:
+        detail_akan_expired = DetailJatahCuti.objects.filter(
+            jatah_cuti=jatah_tahun_lalu,
+            tahun=tahun_lalu,
+            bulan=bulan_sekarang,
+            dipakai=False
+        )
+        
+        for detail in detail_akan_expired:
+            cuti_akan_expired.append({
+                'bulan': calendar.month_name[detail.bulan],
+                'tahun': tahun_lalu
+            })
 
     #  Ambil jatah cuti tahunan (asumsi hanya 1 objek per tahun per karyawan)
     jatah = JatahCuti.objects.filter(karyawan=karyawan, tahun=tahun_sekarang).first()
@@ -75,6 +96,7 @@ def cuti_view(request):
         'sisa_cuti': sisa_cuti,
         'cuti_terpakai': cuti_terpakai,
         'persentase_penggunaan': persentase_penggunaan,
+        'cuti_akan_expired': cuti_akan_expired,  # Tambahkan data cuti yang akan expired
     })
 
 

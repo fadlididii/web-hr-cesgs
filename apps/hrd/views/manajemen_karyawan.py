@@ -7,7 +7,8 @@ from django.http import JsonResponse, HttpResponse
 from ..models import Karyawan
 from ..forms import KaryawanForm
 from apps.authentication.models import User
-# from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
+from apps.hrd.utils.jatah_cuti import hitung_jatah_cuti
+from apps.hrd.utils.generate_password import generate_default_password
 import pandas as pd
 
 @login_required
@@ -16,7 +17,7 @@ def list_karyawan(request):
     selected_nama = request.GET.get('nama', '').strip()
     selected_role = request.GET.get('role', '').strip()
     status_keaktifan = request.GET.get('status_keaktifan', '').strip()
-    selected_status = request.GET.get('status', '').strip()
+    selected_jenis_kelamin = request.GET.get('jenis_kelamin', '').strip()
     selected_divisi = request.GET.get('divisi', '').strip()
     selected_sort_by = request.GET.get('sort_by', 'nama').strip()
     select_action = request.GET.get('select_action')
@@ -27,8 +28,8 @@ def list_karyawan(request):
         filters &= Q(user__role=selected_role)
     if status_keaktifan:
         filters &= Q(status_keaktifan=status_keaktifan)
-    if selected_status:
-        filters &= Q(status=selected_status)
+    if selected_jenis_kelamin:
+        filters &= Q(jenis_kelamin=selected_jenis_kelamin)
     if selected_divisi:
         filters &= Q(divisi=selected_divisi)
 
@@ -74,21 +75,22 @@ def list_karyawan(request):
     paginator = Paginator(karyawan_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
+    
+    # Update context
     context = {
         'karyawan': page_obj,
         'roles': User.ROLE_CHOICES,
-        'status_list': Karyawan.STATUS_CHOICES,
         'status_keaktifan_list': [('Aktif', 'Aktif'), ('Tidak Aktif', 'Tidak Aktif')],
         'divisi_list': Karyawan.DIVISI_CHOICES,
         'selected_nama': selected_nama,
         'selected_role': selected_role,
         'status_keaktifan': status_keaktifan,
-        'selected_status': selected_status,
         'selected_divisi': selected_divisi,
         'selected_sort_by': selected_sort_by,
         'available_columns': available_columns,
         'selected_columns': selected_columns,
+        'jenis_kelamin_list': Karyawan.JENIS_KELAMIN_CHOICES,
+        'selected_jenis_kelamin': selected_jenis_kelamin,
     }
 
     # Jika permintaan berasal dari AJAX, kembalikan hanya tabelnya
@@ -97,7 +99,6 @@ def list_karyawan(request):
 
     return render(request, 'hrd/manajemen_karyawan/index.html', context)
 
-
 @login_required
 def tambah_karyawan(request):
     if request.method == 'POST':
@@ -105,31 +106,34 @@ def tambah_karyawan(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             role = form.cleaned_data['role']
+            nama = form.cleaned_data['nama']
+            tgl_lahir = form.cleaned_data['tanggal_lahir']
 
             if User.objects.filter(email=email).exists():
                 messages.error(request, 'Email sudah terdaftar.')
                 return redirect('tambah_karyawan')
 
-            # Simpan karyawan terlebih dahulu untuk mendapatkan data nama dan tanggal lahir
+            # Simpan karyawan dulu tanpa user
             karyawan = form.save(commit=False)
-            
-            # Buat user dengan data dari form karyawan
+
+            password_default = generate_default_password(nama, tgl_lahir)
+
+            # Buat user
             user = User.objects.create_user(
                 email=email,
                 role=role,
-                nama=karyawan.nama,
-                tanggal_lahir=karyawan.tanggal_lahir
+                password=password_default
             )
 
+            # Assign dan simpan ulang
             karyawan.user = user
             karyawan.save()
-            hitung_jatah_cuti(karyawan)
 
-            messages.success(request, 'Karyawan baru berhasil ditambahkan.')
+            messages.success(request, f'Data karyawan berhasil ditambahkan. Password: {password_default}')
             return redirect('list_karyawan')
     else:
         form = KaryawanForm()
-
+    
     return render(request, 'hrd/manajemen_karyawan/form.html', {'form': form})
 
 

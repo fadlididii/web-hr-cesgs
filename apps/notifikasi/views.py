@@ -15,6 +15,20 @@ def mark_as_read(request, notification_id):
     if hasattr(notification, 'data') and notification.data and 'url' in notification.data:
         return redirect(notification.data['url'])
     
+    # Redirect berdasarkan jenis notifikasi
+    if notification.verb and 'cuti disetujui' in notification.verb.lower() and request.user.role != 'HRD':
+        return redirect('pengajuan_cuti')
+    elif notification.verb and 'cuti ditolak' in notification.verb.lower() and request.user.role != 'HRD':
+        return redirect('pengajuan_cuti')
+    elif notification.verb and 'izin disetujui' in notification.verb.lower() and request.user.role != 'HRD':
+        return redirect('pengajuan_izin')
+    elif notification.verb and 'izin ditolak' in notification.verb.lower() and request.user.role != 'HRD':
+        return redirect('pengajuan_izin')
+    elif notification.verb and 'cuti' in notification.verb.lower() and request.user.role == 'HRD':
+        return redirect('approval_cuti')
+    elif notification.verb and 'izin' in notification.verb.lower() and request.user.role == 'HRD':
+        return redirect('approval_izin')
+    
     # Redirect berdasarkan role jika tidak ada URL spesifik
     if request.user.role == 'HRD':
         return redirect('hrd_dashboard')
@@ -23,7 +37,7 @@ def mark_as_read(request, notification_id):
     elif request.user.role == 'Magang':
         return redirect('magang_dashboard')
     else:
-        return redirect('login')  # fallback ke login jika role tidak dikenali
+        return redirect('login') 
 
 @login_required
 def mark_all_as_read(request):

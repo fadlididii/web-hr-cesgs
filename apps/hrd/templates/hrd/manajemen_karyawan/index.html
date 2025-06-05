@@ -45,6 +45,14 @@
             </select>
           </div>
           <div class="col-md-2">
+            <select name="divisi" class="form-control form-control-sm">
+              <option value="">Semua Divisi</option>
+              {% for divisi_key, divisi_label in divisi_list %}
+              <option value="{{ divisi_key }}" {% if selected_divisi == divisi_key %}selected{% endif %}>{{ divisi_label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
             <select name="status_keaktifan" class="form-control form-control-sm">
               <option value="">Semua Keaktifan</option>
               {% for key, label in status_keaktifan_list %}
@@ -53,15 +61,12 @@
             </select>
           </div>
           <div class="col-md-2">
-            <select name="status" class="form-control form-control-sm">
-              <option value="">Semua Status</option>
-              {% for status_key, status_label in status_list %}
-              <option value="{{ status_key }}" {% if selected_status == status_key %}selected{% endif %}>{{ status_label }}</option>
+            <select name="jenis_kelamin" class="form-control form-control-sm">
+              <option value="">Semua Gender</option>
+              {% for gender_key, gender_label in jenis_kelamin_list %}
+              <option value="{{ gender_key }}" {% if selected_jenis_kelamin == gender_key %}selected{% endif %}>{{ gender_label }}</option>
               {% endfor %}
             </select>
-          </div>
-          <div class="col-md-2">
-            <input type="text" name="divisi" placeholder="Cari divisi..." class="form-control form-control-sm" value="{{ selected_divisi }}">
           </div>
           <div class="col-md-2">
             <select name="sort_by" class="form-control form-control-sm">

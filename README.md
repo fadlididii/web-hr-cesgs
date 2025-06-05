@@ -8,6 +8,8 @@
 - python manage.py makemigrations
 - python manage.py migrate
 6. buat superakun (akun admin)
-- python manage.py createsuperuser
+- buka cmd 
+- run "python manage.py createsuperuser"
+- isi email, role: (HRD, Karyawan Tetap, Magang), password
 7. run server
 - python manage.py runserver

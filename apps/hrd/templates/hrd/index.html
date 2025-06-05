@@ -7,15 +7,7 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
 {% endblock stylesheets %}
 
-<style>
-  #calendar {
-    min-height: 600px;
-  }
-</style>
-
-
 {% block content %}
-
     <!-- Header -->
     <div class="header bg-primary pb-6">
       <div class="container-fluid">
@@ -30,6 +22,15 @@
                   <li class="breadcrumb-item active" aria-current="page">Default</li>
                 </ol>
               </nav>
+            </div>
+            <!-- Jam pindah ke dalam container -->
+            <div class="col-lg-6 col-5 text-right">
+              <div class="d-flex justify-content-end align-items-center">
+                <div class="text-white text-right">
+                  <div id="real-time-clock" class="mb-0 font-weight-bold" style="font-size: 1.8rem;">00:00:00 WIB</div>
+                  <div id="current-date" class="text-white-50" style="font-size: 0.9rem;"></div>
+                </div>
+              </div>              
             </div>
           </div>
           <!-- Card stats -->
@@ -102,23 +103,23 @@
               </div>
             </div>
 
-            <!-- Total Izin Sakit -->
+            <!-- Total Izin Telat -->
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">Total Izin Sakit</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ total_izin_sakit }}</span>
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Izin Telat</h5>
+                      <span class="h2 font-weight-bold mb-0">{{ total_izin_telat }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
-                        <i class="ni ni-ambulance"></i>
+                        <i class="ni ni-time-alarm"></i>
                       </div>
                     </div>
                   </div>
                   <p class="mt-3 mb-0 text-sm">
-                    <span class="text-info"><i class="fa fa-file-medical"></i> {{ sakit_bulan_ini }} disetujui</span>
+                    <span class="text-info"><i class="fa fa-clock"></i> {{ telat_bulan_ini }} disetujui</span>
                   </p>
                 </div>
               </div>
@@ -127,7 +128,6 @@
         </div>
       </div>
     </div>
-
 
 
     <!-- Page content -->
@@ -680,19 +680,33 @@
   
         for (const item of pageItems) {
           const li = document.createElement('li');
-          li.className = 'list-group-item d-flex justify-content-between align-items-center';
-          const tooltipText = item.karyawan.join('\n');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center position-relative';
+          
+          // Buat custom tooltip content dengan styling
+          const tooltipContent = `
+            <div class="custom-tooltip">
+              <h6 class="tooltip-title mb-2">Daftar Karyawan ${item.divisi}</h6>
+              <ul class="tooltip-list">
+                ${item.karyawan.map(nama => `<li class="tooltip-item"><i class="fas fa-user mr-2"></i>${nama}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+
           li.innerHTML = `
-            <span class="text-primary" data-toggle="tooltip" data-html="true" title="${tooltipText.replace(/"/g, '&quot;')}">${item.divisi}</span>
-            <span class="badge badge-success badge-pill">${item.jumlah}</span>
+            <span class="text-primary" data-toggle="tooltip" data-html="true" title="${tooltipContent.replace(/"/g, '&quot;')}">
+              <i class="fas fa-users mr-2"></i>${item.divisi}
+            </span>
+            <span class="badge badge-success badge-pill cursor-pointer" onclick="window.location.href='/hrd/manajemen-karyawan/?divisi=${encodeURIComponent(item.divisi)}'">${item.jumlah}</span>
           `;
           list.appendChild(li);
         }
   
-        // Initialize tooltips
+        // Initialize tooltips with custom class and animation
         $('[data-toggle="tooltip"]').tooltip({
           placement: 'right',
-          template: '<div class="tooltip" role="tooltip"><div class="tooltip-inner text-left" style="white-space: pre-line;"></div></div>'
+          html: true,
+          template: '<div class="tooltip custom-tooltip-wrapper" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
+          animation: true
         });
   
         // Pagination code remains the same
@@ -722,7 +736,32 @@
   
       renderDivisi();
     });
-  </script>  
+  </script> 
+
+  <script>
+    // Fungsi untuk jam
+    function updateClock() {
+      const now = new Date();
+      const jam = now.getHours().toString().padStart(2, '0');
+      const menit = now.getMinutes().toString().padStart(2, '0');
+      const detik = now.getSeconds().toString().padStart(2, '0');
+      const currentTime = `${jam}:${menit}:${detik} WIB`;
+      document.getElementById('real-time-clock').textContent = currentTime;
+  
+      // Update tanggal
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('current-date').textContent = now.toLocaleDateString('id-ID', options);
+  
+      // Tambahkan efek pulse setiap detik
+      const clockElement = document.getElementById('real-time-clock');
+      clockElement.classList.add('pulse');
+      setTimeout(() => clockElement.classList.remove('pulse'), 500);
+    }
+  
+    // Jalankan pertama kali & per detik
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
 {% endblock javascripts %}
 
 <style>
@@ -742,7 +781,27 @@
 
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  50% { transform: scale(1.02); }
   100% { transform: scale(1); }
 }
+</style>
+
+<style>
+  #real-time-clock {
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    font-size: 1.8rem;
+  }
+
+  #current-date {
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.9rem;
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
+  }
+  #calendar {
+    min-height: 600px;
+  }
 </style>

@@ -15,7 +15,7 @@ def sidebar_menu(request):
                     'submenu': [
                         {'name': 'Approval Cuti', 'url': '/hrd/approval-cuti/', 'icon': 'fa fa-circle text-dark'},
                         {'name': 'Pengajuan Cuti', 'url': '/karyawan/pengajuan-cuti/', 'icon': 'fa fa-circle text-dark'},
-                        {'name': 'Jatah Cuti Karyawan', 'url': '/hrd/jatah-cuti/', 'icon': 'fa fa-circle text-dark'},
+                        {'name': 'Jatah Cuti Karyawan', 'url': '/hrd/laporan-jatah-cuti/', 'icon': 'fa fa-circle text-dark'},
                         {'name': 'Input Cuti Bersama', 'url': '/hrd/cuti-bersama/', 'icon': 'fa fa-circle text-dark'},
                         {'name': 'Tidak Ambil Cuti Bersama', 'url': '/karyawan/tidak-ambil-cuti/', 'icon': 'fa fa-circle text-dark'},
                     ]

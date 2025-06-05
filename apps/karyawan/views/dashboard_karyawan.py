@@ -120,15 +120,29 @@ def calendar_events(request):
         })
 
     # Izin
-    grouped_izin = defaultdict(list)
+    grouped_izin_wfh = defaultdict(list)
+    grouped_izin_sakit = defaultdict(list)
     for i in Izin.objects.filter(status='disetujui'):
-        grouped_izin[i.tanggal_izin].append(i.id_karyawan.nama)
+        if i.jenis_izin == 'wfh':
+            grouped_izin_wfh[i.tanggal_izin].append(i.id_karyawan.nama)
+        elif i.jenis_izin == 'sakit':
+            grouped_izin_sakit[i.tanggal_izin].append(i.id_karyawan.nama)
 
-    for date, names in grouped_izin.items():
+    # WFH events
+    for date, names in grouped_izin_wfh.items():
         events.append({
-            "title": f"Izin ({len(names)} orang)",
+            "title": f"WFH ({len(names)} orang)",
             "start": date.isoformat(),
-            "color": "#11cdef",
+            "color": "#11cdef",  # Light blue for WFH
+            "description": ", ".join(names)
+        })
+
+    # Sick leave events
+    for date, names in grouped_izin_sakit.items():
+        events.append({
+            "title": f"Sakit ({len(names)} orang)",
+            "start": date.isoformat(),
+            "color": "#fb6340",  # Orange for sick leave
             "description": ", ".join(names)
         })
 
@@ -155,7 +169,7 @@ def calendar_events(request):
         events.append({
             "title": f"Cuti Bersama: {cb.keterangan or 'Cuti Bersama'}",
             "start": cb.tanggal.isoformat(),
-            "color": "#e55353",
+            "color": "#6f42c1",
             "allDay": True
         })
 

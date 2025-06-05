@@ -24,6 +24,13 @@ def hrd_dashboard(request):
     bulan_ini = datetime.now().month
     tahun_ini = datetime.now().year
 
+    # Hitung total karyawan tetap (aktif dan bukan magang)
+    total_karyawan_tetap = Karyawan.objects.filter(
+        status_keaktifan='Aktif'
+    ).exclude(
+        divisi__icontains='Magang' 
+    ).count()
+    
     # Hitung total cuti
     total_cuti = Cuti.objects.filter(
         jenis_cuti__in=[
@@ -44,27 +51,21 @@ def hrd_dashboard(request):
         tanggal_pengajuan__year=tahun_ini,
         status='disetujui'
     ).count()
-
-    # Hitung total izin sakit
-    total_izin_sakit = Cuti.objects.filter(jenis_cuti='sakit').count()
-
-    # Hitung total izin sakit bulan ini yang disetujui
-    sakit_bulan_ini = Cuti.objects.filter(
-        jenis_cuti='sakit',
-        tanggal_pengajuan__month=bulan_ini,
-        tanggal_pengajuan__year=tahun_ini,
-        status='disetujui'
-    ).count()
     
-    # Hitung total karyawan tetap (aktif dan bukan magang)
-    total_karyawan_tetap = Karyawan.objects.filter(
-        status_keaktifan='Aktif'
-    ).exclude(
-        divisi__icontains='Magang'  # Sesuaikan dengan cara Anda menandai karyawan magang
-    ).count()
-
     # Hitung total izin WFH (sesuaikan dengan model dan field yang Anda gunakan)
     total_izin_wfh = Izin.objects.filter(jenis_izin='wfh').count()
+    
+    # Hitung total izin telat
+    total_izin_telat = Izin.objects.filter(jenis_izin__icontains='telat').count()
+
+    # Hitung total izin telat bulan ini yang disetujui
+    telat_bulan_ini = Izin.objects.filter(
+        jenis_izin__icontains='telat',
+        tanggal_izin__month=bulan_ini,
+        tanggal_izin__year=tahun_ini,
+        status='disetujui'
+    ).count()
+
     # Perbaiki format tahun jika error
     if isinstance(tahun, str) and tahun.startswith("("):
         tahun = tahun.strip("()").replace("'", "").split(",")[0].strip()
@@ -219,12 +220,11 @@ def hrd_dashboard(request):
         "top_cuti_labels": top_cuti_labels,
         "top_cuti_values": top_cuti_values,
         'total_karyawan_tetap': total_karyawan_tetap,
-        'total_cuti': total_cuti,
         'cuti_bulan_ini': cuti_bulan_ini,
-        'total_izin_sakit': total_izin_sakit,
+        'total_cuti': total_cuti,
+        'total_izin_telat': total_izin_telat,
+        'telat_bulan_ini': telat_bulan_ini,
         'total_izin_wfh': total_izin_wfh,
-        'sakit_bulan_ini': sakit_bulan_ini,
-        "cuti_bulan_ini": cuti_bulan_ini,
         "izin_bulan_ini": izin_bulan_ini,
         "cuti_chart": cuti_chart,
         "izin_chart": izin_chart,
@@ -265,15 +265,31 @@ def calendar_events(request):
         })
 
     # Izin
-    grouped_izin = defaultdict(list)
-    for i in Izin.objects.filter(status='disetujui'):
-        grouped_izin[i.tanggal_izin].append(i.id_karyawan.nama)
+    grouped_izin_wfh = defaultdict(list)
+    grouped_izin_telat = defaultdict(list)
 
-    for date, names in grouped_izin.items():
+    for i in Izin.objects.filter(status='disetujui'):
+        if i.jenis_izin.lower() in ['wfh', 'izin wfh']:
+            grouped_izin_wfh[i.tanggal_izin].append(i.id_karyawan.nama)
+        elif i.jenis_izin.lower() in ['telat', 'izin telat']:
+            grouped_izin_telat[i.tanggal_izin].append(i.id_karyawan.nama)
+
+    # WFH events
+    for date, names in grouped_izin_wfh.items():
         events.append({
-            "title": f"Izin ({len(names)} orang)",
+            "title": f"WFH ({len(names)} orang)",
             "start": date.isoformat(),
-            "color": "#11cdef",
+            "color": "#36b9cc",  # Cyan
+            "description": ", ".join(names),
+            "allDay": True
+        })
+
+    # Telat events
+    for date, names in grouped_izin_telat.items():
+        events.append({
+            "title": f"Izin Telat ({len(names)} orang)",
+            "start": date.isoformat(),
+            "color": "#f6c23e",  # Orange
             "description": ", ".join(names),
             "allDay": True
         })
@@ -303,7 +319,7 @@ def calendar_events(request):
         events.append({
             "title": f"Cuti Bersama: {cb.keterangan or 'Cuti Bersama'}",
             "start": cb.tanggal.isoformat(),
-            "color": "#e55353",
+            "color": "#6f42c1",
             "allDay": True
         })
 
@@ -316,4 +332,7 @@ def calendar_events(request):
             "allDay": True
         })
 
+    import pprint
+    pprint.pprint(events)
+    
     return JsonResponse(events, safe=False)

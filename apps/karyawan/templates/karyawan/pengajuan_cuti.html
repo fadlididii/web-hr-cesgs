@@ -17,6 +17,23 @@
 
 <div class="container-fluid mt--6">
 
+  <!-- Peringatan Cuti yang Akan Expired -->
+  {% if cuti_akan_expired %}
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+    <span class="alert-text"><strong>Perhatian!</strong> Anda memiliki jatah cuti yang akan expired bulan ini:</span>
+    <ul class="mb-0 mt-2">
+      {% for cuti in cuti_akan_expired %}
+        <li>Jatah cuti {{ cuti.bulan }} {{ cuti.tahun }} akan expired pada akhir bulan ini.</li>
+      {% endfor %}
+    </ul>
+    <span class="alert-text">Segera gunakan jatah cuti Anda sebelum hangus!</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
   <!-- Visualisasi Sisa Cuti -->
   <div class="card mb-4">
     <div class="card-header">
