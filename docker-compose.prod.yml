@@ -1,10 +1,10 @@
 version: '3.8'
 services:
   app:
+    image: ghcr.io/esg-intelligence/hr-app:latest
     container_name: hr_app
     restart: always
     env_file: .env
-    build: .
     environment:
       VIRTUAL_HOST: hr.esgi.ai
       VIRTUAL_PORT: 5005
@@ -12,53 +12,60 @@ services:
       LETSENCRYPT_EMAIL: info.cesgs@gmail.com
       MODE: "production"
     volumes:
-      - ./secrets:/root/secrets:ro
+      - ../secrets:/root/secrets:ro
     ports:
       - "${APP_PORT}:5005"
     expose:
       - 5005
     networks:
-      - web_network
-  proxy:
-    image: jwilder/nginx-proxy:alpine
-    container_name: proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./config/nginx-proxy/conf.d/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro
-      - ./secrets/certs:/etc/nginx/certs
-      - ./config/nginx-proxy/vhost.d:/etc/nginx/vhost.d
-      - ./config/nginx-proxy/html:/usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-    labels:
-      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
-    restart: always
-    # environment:
-    #   - HTTPS_METHOD=nohttps
-    expose:
-      - "80"
-      - "443"
-    depends_on:
-      - app
-    networks:
-      - web_network
-  letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    restart: always
-    volumes:
-      - ./secrets/certs:/etc/nginx/certs
-      - ./config/nginx-proxy/vhost.d:/etc/nginx/vhost.d
-      - ./config/nginx-proxy/html:/usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      DHPARAM_GENERATION: "false"
-      DEFAULT_EMAIL: info.cesgs@gmail.com
-    depends_on:
-      - proxy
-    networks:
-      - web_network
+      - root_esgi_insights
+      # - web_network
+
+  # Enable this to deploy on fresh server
+  # proxy:
+  #   image: jwilder/nginx-proxy:alpine
+  #   container_name: proxy
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./config/nginx-proxy/conf.d/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro
+  #     - ./secrets/certs:/etc/nginx/certs
+  #     - ./config/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+  #     - ./config/nginx-proxy/html:/usr/share/nginx/html
+  #     - /var/run/docker.sock:/tmp/docker.sock:ro
+  #   labels:
+  #     - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+  #   restart: always
+  #   # environment:
+  #   #   - HTTPS_METHOD=nohttps
+  #   expose:
+  #     - "80"
+  #     - "443"
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - web_network
+  # Enable this to deploy on fresh server
+  # letsencrypt:
+  #   image: jrcs/letsencrypt-nginx-proxy-companion
+  #   restart: always
+  #   volumes:
+  #     - ./secrets/certs:/etc/nginx/certs
+  #     - ./config/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+  #     - ./config/nginx-proxy/html:/usr/share/nginx/html
+  #     - /var/run/docker.sock:/tmp/docker.sock:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   environment:
+  #     DHPARAM_GENERATION: "false"
+  #     DEFAULT_EMAIL: info.cesgs@gmail.com
+  #   depends_on:
+  #     - proxy
+  #   networks:
+  #     - web_network
 networks:
-  web_network:
+  # web_network:
+  #   driver: bridge
+  root_esgi_insights:
+    external: true
     driver: bridge

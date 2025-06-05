@@ -1,0 +1,76 @@
+name: Production Deployment
+on:
+  push:
+    branches: [main]
+env:
+  REGISTRY: ghcr.io
+  ACTOR: sagwascript
+  IMAGE_NAME_API: hr-app
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # Log into github registry
+      - name: Log into registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME_API --label "runnumber=${GITHUB_RUN_ID}"
+      - name: Push
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME_API
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME_API $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs: build-app
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Deploy to server
+        run: |
+          set -x
+          eval $(ssh-agent -s)
+          echo "${{ secrets.DEPLOY_PRODUCTION_SERVER_PRIVATE_KEY  }}" | tr -d '\r' | ssh-add - > /dev/null
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan ${{ secrets.PRODUCTION_SERVER_IP }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          echo "Loading secrets..."
+          mkdir -p ./secrets
+          echo "${{ secrets.ENV_PRODUCTION }}" > "./.env"
+          # check available space
+          available_space=$(ssh root@${{ secrets.PRODUCTION_SERVER_IP }} "df / | awk 'FNR == 2 {print}' | awk '{print \$4}'")
+          # prune dangling docker images if available space is less than 4GB
+          if [ $(($available_space)) -lt 4000000 ]; then ssh root@${{ secrets.PRODUCTION_SERVER_IP }} "docker image prune --all --force"; fi
+          # git fetch origin
+          # git reset --hard origin/main
+          ssh root@${{ secrets.PRODUCTION_SERVER_IP }} "mkdir -p ~/hr-app"
+          scp -r .env root@${{ secrets.PRODUCTION_SERVER_IP }}:~/hr-app/
+          rsync -hrvz ./ root@${{ secrets.PRODUCTION_SERVER_IP }}:~/hr-app/
+          ssh root@${{ secrets.PRODUCTION_SERVER_IP }} "echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin; docker compose -f ~/hr-app/docker-compose.prod.yml pull app; docker compose -f ~/hr-app/docker-compose.prod.yml up -d app;"
